@@ -20,9 +20,11 @@ import { UserBuilder } from '../../support/builder/UserBuilder';
 import { UserRole } from '../../../src/app/_enums/user-role.enum';
 import { UserUtils } from '../../support/utils/UserUtils';
 import { ConnectUtils } from '../../support/utils/connect/ConnectUtils';
-import { PipelineUtils } from '../../support/utils/PipelineUtils';
+import { PipelineUtils } from '../../support/utils/pipeline/PipelineUtils';
 import { PipelineElementBuilder } from '../../support/builder/PipelineElementBuilder';
 import { PipelineBuilder } from '../../support/builder/PipelineBuilder';
+import { PermissionUtils } from '../../support/utils/user/PermissionUtils';
+import { NavigationUtils } from '../../support/utils/navigation/NavigationUtils';
 
 describe('Test Group Management for Pipelines', () => {
     beforeEach('Setup Test', () => {
@@ -94,18 +96,18 @@ describe('Test Group Management for Pipelines', () => {
 
         // Add user group to pipeline
         PipelineUtils.goToPipelines();
-        cy.dataCy('share').click();
+        PermissionUtils.openManagePermissions();
         cy.get('label').contains('Authorized Groups').click();
         cy.get('mat-option').contains('User_Group').click();
-        cy.dataCy('sp-element-edit-user-save').click();
+        PermissionUtils.save();
 
         // Login as first user which belongs to user group with pipeline admin role
         UserUtils.switchUser(user);
 
-        cy.dataCy('navigation-icon', { timeout: 10000 }).should(
-            'have.length',
-            4,
-        );
+        NavigationUtils.validateActiveModules([
+            NavigationUtils.PIPELINES,
+            NavigationUtils.CONFIGURATION,
+        ]);
 
         // Check if pipeline is visible
         PipelineUtils.goToPipelines();
@@ -120,11 +122,7 @@ describe('Test Group Management for Pipelines', () => {
 
         // Login as user2
         UserUtils.switchUser(user2);
-
-        cy.dataCy('navigation-icon', { timeout: 10000 }).should(
-            'have.length',
-            2,
-        );
+        NavigationUtils.validateActiveModules([NavigationUtils.PIPELINES]);
 
         // Check if pipeline is invisible to user2
         PipelineUtils.goToPipelines();

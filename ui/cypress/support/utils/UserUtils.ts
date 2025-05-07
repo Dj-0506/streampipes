@@ -36,6 +36,10 @@ export class UserUtils {
         .addRole(UserRole.ROLE_CONNECT_ADMIN)
         .build();
 
+    public static goToLogin() {
+        cy.visit('#/login');
+    }
+
     public static goToUserConfiguration() {
         cy.visit('#/configuration/security');
     }
@@ -44,7 +48,7 @@ export class UserUtils {
         this.goToUserConfiguration();
 
         // user configuration
-        cy.dataCy('add-new-user').click();
+        cy.dataCy('add-new-user', { timeout: 10000 }).click();
         cy.dataCy('new-user-email').type(user.email);
         cy.dataCy('new-user-full-name').type(user.name);
         cy.dataCy('new-user-password').type(user.password);
@@ -62,9 +66,28 @@ export class UserUtils {
         cy.dataCy('sp-element-edit-user-save').click();
     }
 
+    /**
+     * Create a new user with the specified roles and a default password to the system.
+     *
+     * @param name - The name of the user to be added.
+     * @param roles - The roles to be assigned to the new user.
+     */
+    public static createUser(name: string, ...roles: UserRole[]): User {
+        const userBuilder = UserBuilder.create(`${name}@streampipes.apache.org`)
+            .setName(name)
+            .setPassword('default');
+
+        roles.forEach(role => userBuilder.addRole(role));
+
+        const user = userBuilder.build();
+
+        this.addUser(user);
+        return user;
+    }
+
     public static switchUser(user: User) {
         cy.logout();
-        cy.visit('#/login');
+        UserUtils.goToLogin();
         cy.dataCy('login-email').type(user.email);
         cy.dataCy('login-password').type(user.password);
         cy.dataCy('login-button').click();

@@ -18,7 +18,6 @@
 
 package org.apache.streampipes.sdk.helpers;
 
-import org.apache.streampipes.commons.Utils;
 import org.apache.streampipes.model.schema.EventProperty;
 import org.apache.streampipes.model.schema.EventPropertyList;
 import org.apache.streampipes.model.schema.EventPropertyNested;
@@ -104,52 +103,53 @@ public class EpRequirements {
     return new EventPropertyPrimitive();
   }
 
-  public static EventPropertyPrimitive booleanReq(String domainProperty) {
-    return appendDomainProperty(datatypeReq(XSD.BOOLEAN.toString()), domainProperty);
+  public static EventPropertyPrimitive booleanReq(String semanticType) {
+    return appendSemanticType(datatypeReq(XSD.BOOLEAN.toString()), semanticType);
   }
 
-  public static EventPropertyPrimitive integerReq(String domainProperty) {
-    return appendDomainProperty(datatypeReq(XSD.INTEGER.toString()), domainProperty);
+  public static EventPropertyPrimitive integerReq(String semanticType) {
+    return appendSemanticType(datatypeReq(XSD.INTEGER.toString()), semanticType);
   }
 
-  public static EventPropertyPrimitive doubleReq(String domainProperty) {
-    return appendDomainProperty(datatypeReq(XSD.DOUBLE.toString()), domainProperty);
+  public static EventPropertyPrimitive doubleReq(String semanticType) {
+    return appendSemanticType(datatypeReq(XSD.DOUBLE.toString()), semanticType);
   }
 
-  public static EventPropertyPrimitive stringReq(String domainProperty) {
-    return appendDomainProperty(datatypeReq(XSD.STRING.toString()), domainProperty);
+  public static EventPropertyPrimitive stringReq(String semanticType) {
+    return appendSemanticType(datatypeReq(XSD.STRING.toString()), semanticType);
   }
 
-  public static EventPropertyPrimitive numberReq(String domainProperty) {
-    return appendDomainProperty(datatypeReq(SO.NUMBER), domainProperty);
+  public static EventPropertyPrimitive numberReq(String semanticType) {
+    return appendSemanticType(datatypeReq(SO.NUMBER), semanticType);
   }
 
-  private static <T extends EventProperty> EventProperty domainPropertyReq(String domainProperty,
-                                                                           Class<T> eventProperty) {
+  private static <T extends EventProperty> EventProperty semanticTypeReq(String semanticType,
+                                                                         Class<T> eventProperty) {
     EventProperty ep = null;
     try {
       ep = eventProperty.newInstance();
+      ep.setSemanticType(semanticType);
     } catch (InstantiationException | IllegalAccessException e) {
       e.printStackTrace();
     }
-    ep.setDomainProperties(Utils.createURI(domainProperty));
     return ep;
   }
 
-  public static EventPropertyPrimitive domainPropertyReq(String domainProperty) {
-    return (EventPropertyPrimitive) domainPropertyReq(domainProperty, EventPropertyPrimitive.class);
+  public static EventPropertyPrimitive semanticTypeReq(String semanticType) {
+    return (EventPropertyPrimitive) semanticTypeReq(semanticType, EventPropertyPrimitive.class);
   }
 
-  public static EventPropertyList domainPropertyReqList(String domainProperty) {
-    return (EventPropertyList) domainPropertyReq(domainProperty, EventPropertyList.class);
+  public static EventPropertyList semanticTypeReqList(String semanticType) {
+    return (EventPropertyList) semanticTypeReq(semanticType, EventPropertyList.class);
   }
 
-  private static EventPropertyPrimitive appendDomainProperty(EventPropertyPrimitive property, String domainProperty) {
-    property.setDomainProperties(Utils.createURI(domainProperty));
+
+  private static EventPropertyPrimitive appendSemanticType(EventPropertyPrimitive property, String semanticType) {
+    property.setSemanticType(semanticType);
     return property;
   }
 
   public static EventPropertyPrimitive timestampReq() {
-    return domainPropertyReq("http://schema.org/DateTime");
+    return semanticTypeReq("http://schema.org/DateTime");
   }
 }

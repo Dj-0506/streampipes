@@ -19,6 +19,7 @@
 import { UserBuilder } from '../../support/builder/UserBuilder';
 import { UserRole } from '../../../src/app/_enums/user-role.enum';
 import { UserUtils } from '../../support/utils/UserUtils';
+import { NavigationUtils } from '../../support/utils/navigation/NavigationUtils';
 
 const testedRoles = [
     UserRole.ROLE_PIPELINE_ADMIN,
@@ -28,7 +29,7 @@ const testedRoles = [
     UserRole.ROLE_ASSET_ADMIN,
 ];
 
-for (var i = 0; i < testedRoles.length; i++) {
+for (let i = 0; i < testedRoles.length; i++) {
     const testRole = testedRoles[i];
     describe('Test User Role ' + testedRoles[i], () => {
         beforeEach('Setup Test', () => {
@@ -36,13 +37,12 @@ for (var i = 0; i < testedRoles.length; i++) {
         });
 
         it('Perform Test', () => {
-            // Add new user
             UserUtils.goToUserConfiguration();
-            cy.dataCy('navigation-icon', { timeout: 10000 }).should(
-                'have.length',
-                9,
-            );
 
+            // validate navigation bar shows all modules
+            NavigationUtils.validateActiveModules(NavigationUtils.ALL_MODULES);
+
+            // Add new user
             cy.dataCy('user-accounts-table-row', { timeout: 10000 }).should(
                 'have.length',
                 1,
@@ -68,30 +68,30 @@ for (var i = 0; i < testedRoles.length; i++) {
 
             // Check if every role displays correct navigation menu
             if (testRole == UserRole.ROLE_PIPELINE_ADMIN) {
-                cy.dataCy('navigation-icon', { timeout: 10000 }).should(
-                    'have.length',
-                    4,
-                );
+                NavigationUtils.validateActiveModules([
+                    NavigationUtils.PIPELINES,
+                    NavigationUtils.CONFIGURATION,
+                ]);
             } else if (testRole == UserRole.ROLE_DASHBOARD_ADMIN) {
-                cy.dataCy('navigation-icon', { timeout: 10000 }).should(
-                    'have.length',
-                    2,
-                );
+                NavigationUtils.validateActiveModules([
+                    NavigationUtils.PIPELINES,
+                    NavigationUtils.DASHBOARD,
+                ]);
             } else if (testRole == UserRole.ROLE_DATA_EXPLORER_ADMIN) {
-                cy.dataCy('navigation-icon', { timeout: 10000 }).should(
-                    'have.length',
-                    2,
-                );
+                NavigationUtils.validateActiveModules([
+                    NavigationUtils.PIPELINES,
+                    NavigationUtils.DATA_EXPLORER,
+                ]);
             } else if (testRole == UserRole.ROLE_CONNECT_ADMIN) {
-                cy.dataCy('navigation-icon', { timeout: 10000 }).should(
-                    'have.length',
-                    3,
-                );
+                NavigationUtils.validateActiveModules([
+                    NavigationUtils.CONNECT,
+                    NavigationUtils.CONFIGURATION,
+                ]);
             } else if (testRole == UserRole.ROLE_ASSET_ADMIN) {
-                cy.dataCy('navigation-icon', { timeout: 10000 }).should(
-                    'have.length',
-                    1,
-                );
+                NavigationUtils.validateActiveModules([
+                    NavigationUtils.ASSET_MANAGEMENT,
+                    NavigationUtils.CONFIGURATION,
+                ]);
             }
 
             // Login as admin and delete user

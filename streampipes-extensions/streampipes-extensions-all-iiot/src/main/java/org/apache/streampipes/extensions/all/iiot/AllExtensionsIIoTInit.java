@@ -39,6 +39,7 @@ import org.apache.streampipes.messaging.pulsar.SpPulsarProtocolFactory;
 import org.apache.streampipes.processors.changedetection.jvm.ChangeDetectionExtensionModuleExport;
 import org.apache.streampipes.processors.enricher.jvm.EnricherExtensionModuleExport;
 import org.apache.streampipes.processors.filters.jvm.FilterExtensionModuleExport;
+import org.apache.streampipes.processors.llm.jvm.LlmExtensionModuleExport;
 import org.apache.streampipes.processors.siddhi.SiddhiFilterExtensionModuleExport;
 import org.apache.streampipes.processors.transformation.jvm.TransformationExtensionModuleExport;
 import org.apache.streampipes.service.extensions.StreamPipesExtensionsServiceBase;
@@ -48,6 +49,9 @@ import org.apache.streampipes.sinks.internal.jvm.InternalSinksExtensionModuleExp
 import org.apache.streampipes.sinks.notifications.jvm.NotificationsExtensionModuleExport;
 import org.apache.streampipes.wrapper.standalone.runtime.StandaloneStreamPipesRuntimeProvider;
 
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
 public class AllExtensionsIIoTInit extends StreamPipesExtensionsServiceBase {
 
   public static void main(String[] args) {
@@ -82,7 +86,8 @@ public class AllExtensionsIIoTInit extends StreamPipesExtensionsServiceBase {
             new BrokerSinksExtensionModuleExport(),
             new DatabaseSinksExtensionModuleExport(),
             new InternalSinksExtensionModuleExports(),
-            new NotificationsExtensionModuleExport()
+            new NotificationsExtensionModuleExport(),
+            new LlmExtensionModuleExport()
         )
         .registerRuntimeProvider(new StandaloneStreamPipesRuntimeProvider())
         .registerMessagingProtocols(

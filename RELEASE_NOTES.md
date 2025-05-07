@@ -21,6 +21,178 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+# [0.97.0]
+
+## What's Changed
+
+
+### Enhancement 🌟
+
+* [[#3355](https://github.com/apache/streampipes/issues/3355)]: Add new avro format parser
+* [[#3191](https://github.com/apache/streampipes/issues/3191)]: Remove `latestFetchedNodes` and `nodes` from OPC UA Adapters in CouchDB
+* [[#3179](https://github.com/apache/streampipes/issues/3179)]: New Processor: SensorLimitAlert
+* [[#3178](https://github.com/apache/streampipes/issues/3178)]: Lack of Label Configuration Indication
+* [[#3176](https://github.com/apache/streampipes/issues/3176)]: Move adapter preview from dialog to details page
+* [[#3091](https://github.com/apache/streampipes/issues/3091)]: Add time ordering configuration to data explorer
+* [[#3090](https://github.com/apache/streampipes/issues/3090)]: Add gauge chart to data explorer
+* [[#3079](https://github.com/apache/streampipes/issues/3079)]: Add permission management to data views
+* [[#3068](https://github.com/apache/streampipes/issues/3068)]: Add data refresh interval to data explorer
+* [[#3059](https://github.com/apache/streampipes/issues/3059)]: Extend capabilities of time selection bar
+* [[#3043](https://github.com/apache/streampipes/issues/3043)]: Support selection of data views in data explorer dashboard
+* [[#3033](https://github.com/apache/streampipes/issues/3033)]: Support modification of individual data views
+* [[#2975](https://github.com/apache/streampipes/issues/2975)]: Configurable documentation links
+* [[#2914](https://github.com/apache/streampipes/issues/2914)]: feat: Support HTTP proxy in MS Teams sink
+* [[#2374](https://github.com/apache/streampipes/issues/2374)]: Provide a framework to easily unit test processing elements
+* [[#1742](https://github.com/apache/streampipes/issues/1742)]: Extend supported data types for PLC4X S7 adapter
+* [[#963](https://github.com/apache/streampipes/issues/963)]: Display inherited methods and their docstrings as well in Mkdocs
+* [[#3406](https://github.com/apache/streampipes/pull/3406)]: feat: Add user hint to data view selection panel if no data view is present
+* [[#3367](https://github.com/apache/streampipes/issues/3367)]: Support Avro as format
+* [[#3366](https://github.com/apache/streampipes/issues/3366)]: Extend configurations of Apache Kafka adapter and sink
+* [[#3362](https://github.com/apache/streampipes/issues/3362)]: SASL/SSL support for Kafka adapter
+* [[#3292](https://github.com/apache/streampipes/issues/3292)]: Show adapter and pipeline configuration in UI
+* [[#3285](https://github.com/apache/streampipes/issues/3285)]: Extend allowed file extensions for upload with environment variable
+* [[#3283](https://github.com/apache/streampipes/issues/3283)]: OPC-UA adapter should send incomplete events in case of bad status code
+* [[#3280](https://github.com/apache/streampipes/issues/3280)]: Add support for pipeline templates
+* [[#3259](https://github.com/apache/streampipes/issues/3259)]: Add duplicate filter to the data lake sink
+* [[#3236](https://github.com/apache/streampipes/pull/3236)]: feat: Add dialog window for deletion of assets
+* [[#3235](https://github.com/apache/streampipes/pull/3235)]: feat: Add option to make doughnut chart out of pie chart
+* [[#3227](https://github.com/apache/streampipes/issues/3227)]: Move file management from iconbar to settings
+* [[#3224](https://github.com/apache/streampipes/issues/3224)]: Add API to programmatically create adapters more easily
+* [[#3218](https://github.com/apache/streampipes/issues/3218)]: Support custom roles
+* [[#3212](https://github.com/apache/streampipes/issues/3212)]: Show input fields in pipeline element customization dialog
+* [[#3208](https://github.com/apache/streampipes/issues/3208)]: Add data processor to perform math expressions
+* [[#3207](https://github.com/apache/streampipes/issues/3207)]: Remove pipeline element recommender
+* [[#3192](https://github.com/apache/streampipes/issues/3192)]: Simplify permissions
+* [[#3188](https://github.com/apache/streampipes/issues/3188)]: Performance Issue: Large Stored Tree Nodes Impacting UI
+* [[#3174](https://github.com/apache/streampipes/issues/3174)]: Ease modification of widget name in data explorer data view
+* [[#3172](https://github.com/apache/streampipes/issues/3172)]: New Processor: QualityControlLimitsEnrichment
+* [[#3156](https://github.com/apache/streampipes/issues/3156)]: Add asset browser to overview pages
+* [[#3141](https://github.com/apache/streampipes/issues/3141)]: Add site and area configuration to assets
+* [[#3135](https://github.com/apache/streampipes/issues/3135)]: Add labels and asset type to asset view
+* [[#3121](https://github.com/apache/streampipes/issues/3121)]: Add live preview to pipeline details
+* [[#3105](https://github.com/apache/streampipes/issues/3105)]: Allow modification of running pipelines
+* [[#3165](https://github.com/apache/streampipes/issues/3165)]: Remove configurable data formats
+* [[#3045](https://github.com/apache/streampipes/issues/3045)]: Remove deprecated AssetDashboardResource
+* [[#2962](https://github.com/apache/streampipes/issues/2962)]: Remove deprecated/obsolete static properties
+* [[#3125](https://github.com/apache/streampipes/pull/3125)]: chore: Load adapter metrics in a single request
+* [[#3120](https://github.com/apache/streampipes/pull/3120)]: chore(#3119): Improve pipeline editor component structure
+* [[#3407](https://github.com/apache/streampipes/issues/3407)]: Update Maven Archetypes for Release
+* [[#2795](https://github.com/apache/streampipes/pull/2795)]: refactor: restructure data explorer modules
+* [[#2766](https://github.com/apache/streampipes/pull/2766)]: refactor: replace `StorageManager` by `StorageDispatcher`
+* [[#3119](https://github.com/apache/streampipes/issues/3119)]: Refactor pipeline editor UI components
+* [[#3114](https://github.com/apache/streampipes/issues/3114)]: Improve pipeline details view
+
+### Bug fixes 🧰
+
+* [[#3460](https://github.com/apache/streampipes/issues/3460)]: Pipeline view broken after clicking "Add template" button twice
+* [[#3425](https://github.com/apache/streampipes/issues/3425)]: Adapter's "Reduce event rate" will not work on edit
+* [[#3404](https://github.com/apache/streampipes/issues/3404)]: Data Lake Sink Update Fails Between Releases
+* [[#3257](https://github.com/apache/streampipes/issues/3257)]: `StreamPipesFunctionHandler` Does Not Clean Up All Functions on Service Stop
+* [[#3256](https://github.com/apache/streampipes/issues/3256)]: No bad file extension error at upload
+* [[#3252](https://github.com/apache/streampipes/issues/3252)]: Unable to save pipeline with a long name
+* [[#3249](https://github.com/apache/streampipes/issues/3249)]: `startAndEditOpcAdapters` test fails in Edit OPC-UA Adapter with Tree editor
+* [[#3247](https://github.com/apache/streampipes/issues/3247)]: timeRangeSelectors` e2e test fails in nightly CI/CD runs
+* [[#3237](https://github.com/apache/streampipes/issues/3237)]: Transform to boolean processor output bad event
+* [[#3198](https://github.com/apache/streampipes/issues/3198)]: Add image to documentation.md
+* [[#3131](https://github.com/apache/streampipes/issues/3131)]: Migration breaks core when trying to migrate non-existing extension
+* [[#3124](https://github.com/apache/streampipes/pull/3124)]: fix: Avoid machine simulator crash
+* [[#3099](https://github.com/apache/streampipes/issues/3099)]: PLC adapters do not recover from connection failures
+* [[#3097](https://github.com/apache/streampipes/issues/3097)]: Duplicated "Schema Update" properties in Data Lake configuration
+* [[#3055](https://github.com/apache/streampipes/issues/3055)]: Data Explorer widgets break in grouping mode
+* [[#3014](https://github.com/apache/streampipes/issues/3014)]: File not stored in static property
+* [[#3010](https://github.com/apache/streampipes/issues/3010)]: Incorrect Error Message Rendering for Adapter Creation
+* [[#2997](https://github.com/apache/streampipes/issues/2997)]: Timestamp rule is not persisted in UI when selecting milliseconds
+* [[#2995](https://github.com/apache/streampipes/issues/2995)]: Timestamp conversion is broken for unix timestamps in seconds
+* [[#2976](https://github.com/apache/streampipes/issues/2976)]: Add missing PLC4X datatypes
+* [[#2971](https://github.com/apache/streampipes/issues/2971)]: E-Mail tokens contain characters not allowed in URLs
+* [[#2964](https://github.com/apache/streampipes/issues/2964)]: Timestamp Conversion is Broken in Adapters
+* [[#2819](https://github.com/apache/streampipes/issues/2819)]: Gray connections at the first connection attempt
+* [[#2817](https://github.com/apache/streampipes/issues/2817)]: Pipeline loosing connections
+* [[#1659](https://github.com/apache/streampipes/issues/1659)]: Update_versions script of installer is broken
+* [[#1485](https://github.com/apache/streampipes/issues/1485)]: Mqtt connection fails
+* [[#3405](https://github.com/apache/streampipes/pull/3405)]: fix: Avoid invalid migration when updating from 0.95.0 to 0.97.0
+* [[#3026](https://github.com/apache/streampipes/pull/3026)]: fix: Support multiple sensors of the same type in OI4 adapter
+* [[#3437](https://github.com/apache/streampipes/pull/3437)]: fix(#3425): Properly store stream transformation rules in adapter
+
+
+
+### Deprecation ⚠️
+The following features will be removed in the next version:
+
+- **Method:** `IParameterExtractor.selectedTreeNodesInternalNames`
+  - Use `selectedTreeNodesInternalNames(String, Class)` instead.
+
+- **Method:** `SpServiceDefinitionBuilder.registerMessagingFormat`
+- **Method:** `SpServiceDefinitionBuilder.registerMessagingFormats`
+- **Method:** `AbstractProcessingElementBuilder.supportedFormats`
+- **Class:** `SupportedFormats`
+
+- **Method:** `IStreamPipesClient.registerDataFormat`
+  - Manual registration of data formats is no longer required.
+
+- **Class:** `CreateNestedTransformationRule`
+- **Class:** `CreateNestedRuleDescription`
+  - Adding nested properties to events in the adapter is no longer supported due to increased event complexity.
+  - To migrate, all adapters must remove references to this rule.
+
+- **Concept:** `List<URI> domainProperties` in `EventProperty` has been replaced with `String semanticType`.
+  - All APIs using this model must be updated accordingly.
+
+- **Component:** The Live Dashboard has been replaced with an updated version of the Data Explorer.
+  - To migrate, existing dashboards must be manually transitioned to the new Data Explorer Dashboards and Data View.
+
+
+
+### Documentation & Website 📚
+
+* [[#2921](https://github.com/apache/streampipes/pull/2921)]: feat: Add "Last Updated Time" for python client docs site
+* [[#2904](https://github.com/apache/streampipes/pull/2904)]: feat(#2903): Add ROS data sink, add new connectors-ros module
+* [[#2876](https://github.com/apache/streampipes/pull/2876)]: feats: add more convenient features for python client docs
+* [[#2864](https://github.com/apache/streampipes/pull/2864)]: fix: remove gen_ref_pages page from python client docs
+* [[#2863](https://github.com/apache/streampipes/pull/2863)]: Docs: Modify the UI sample port of K8S
+* [[#963](https://github.com/apache/streampipes/issues/963)]: Display inherited methods and their docstrings as well in Mkdocs
+* [[#2979](https://github.com/apache/streampipes/issues/2979)]: Add documentation to adapter overview view
+
+
+### Dependency Updates 📦
+
+* [[#2921](https://github.com/apache/streampipes/pull/2921)]: feat: Add "Last Updated Time" for python client docs site
+* [[#2904](https://github.com/apache/streampipes/pull/2904)]: feat(#2903): Add ROS data sink, add new connectors-ros module
+* [[#2897](https://github.com/apache/streampipes/pull/2897)]: chore(deps): bump com.google.protobuf:protobuf-java from 4.26.1 to 4.27.0
+* [[#2878](https://github.com/apache/streampipes/pull/2878)]: chore(deps): bump spring-security.version from 6.2.3 to 6.3.0
+* [[#2874](https://github.com/apache/streampipes/pull/2874)]: chore(deps-dev): bump twine from 5.0.0 to 5.1.0 in /streampipes-client-python
+* [[#2869](https://github.com/apache/streampipes/pull/2869)]: chore: remove OWASP plugin dependency
+* [[#2868](https://github.com/apache/streampipes/pull/2868)]: chore(deps): bump org.owasp:dependency-check-maven from 9.1.0 to 9.2.0
+* [[#2861](https://github.com/apache/streampipes/pull/2861)]: chore(deps): bump io.nats:jnats from 2.17.0 to 2.18.0
+* [[#2852](https://github.com/apache/streampipes/pull/2852)]: chore(deps): bump org.mockito:mockito-core from 5.11.0 to 5.12.0
+* [[#2835](https://github.com/apache/streampipes/pull/2835)]: feat: provide basic support for IoTDB as time series storage
+* [[#2832](https://github.com/apache/streampipes/pull/2832)]: chore(deps-dev): bump jinja2 from 3.1.3 to 3.1.4 in /streampipes-client-python
+* [[#2827](https://github.com/apache/streampipes/pull/2827)]: feat: add name sanitizer for IotDB
+* [[#2826](https://github.com/apache/streampipes/pull/2826)]: chore(deps): bump org.apache.maven.plugin-tools:maven-plugin-annotations from 3.12.0 to 3.13.0
+* [[#2825](https://github.com/apache/streampipes/pull/2825)]: chore(deps): bump org.apache.maven.plugins:maven-plugin-plugin from 3.12.0 to 3.13.0
+* [[#2814](https://github.com/apache/streampipes/pull/2814)]: chore(deps): bump com.google.guava:guava from 33.1.0-jre to 33.2.0-jre
+* [[#2812](https://github.com/apache/streampipes/pull/2812)]: chore(deps-dev): bump express from 4.18.3 to 4.19.2 in /ui
+* [[#2810](https://github.com/apache/streampipes/pull/2810)]: chore(deps): bump follow-redirects from 1.15.5 to 1.15.6 in /ui
+* [[#2809](https://github.com/apache/streampipes/pull/2809)]: chore(deps): bump axios and @angular-architects/native-federation in /ui
+* [[#2808](https://github.com/apache/streampipes/pull/2808)]: chore(deps-dev): bump ejs from 3.1.9 to 3.1.10 in /ui
+* [[#2803](https://github.com/apache/streampipes/pull/2803)]: refactor: abstract data explorer modules from Influx-related code
+* [[#2802](https://github.com/apache/streampipes/pull/2802)]: chore(deps): bump com.puppycrawl.tools:checkstyle from 10.15.0 to 10.16.0
+* [[#2801](https://github.com/apache/streampipes/pull/2801)]: chore(deps-dev): bump pytest from 8.1.1 to 8.2.0 in /streampipes-client-python
+* [[#2800](https://github.com/apache/streampipes/pull/2800)]: chore(deps-dev): bump mkdocstrings from 0.24.0 to 0.25.0 in /streampipes-client-python
+* [[#2799](https://github.com/apache/streampipes/pull/2799)]: chore(deps): bump org.simplejavamail:simple-java-mail from 8.8.0 to 8.9.0
+* [[#2798](https://github.com/apache/streampipes/pull/2798)]: chore(deps): bump commons-codec:commons-codec from 1.16.0 to 1.17.0
+* [[#2795](https://github.com/apache/streampipes/pull/2795)]: refactor: restructure data explorer modules
+* [[#2769](https://github.com/apache/streampipes/pull/2769)]: chore(deps): bump commons-io:commons-io from 2.15.1 to 2.16.1
+
+
+# [0.95.1]
+
+## What's Changed
+
+### Bug fixes 🧰
+
+* [[#2944](https://github.com/apache/streampipes/issues/2944)]: Fix S7 PLC connection issue
+
 # [0.95.0]
 
 ## What's Changed

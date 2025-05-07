@@ -73,6 +73,7 @@ for (let module of config.modules) {
         path: modules[module]['path'],
         link: modules[module]['link'],
         pageNames: modules[module]['pageNames'],
+        privileges: modules[module]['privileges'],
         url: modules[module]['url'],
         title: modules[module]['title'],
         icon: modules[module]['icon'],
@@ -201,4 +202,19 @@ if (process.env.CONSTANTS_FILE !== undefined) {
     );
 }
 
+console.log('Moving translations from deployment/i18n to assets/i18n');
+
+const sourceDir = 'deployment/i18n';
+const destDir = 'src/assets/i18n';
+
+if (!fs.existsSync(destDir)) {
+    fs.mkdirSync(destDir, { recursive: true });
+}
+
+fs.readdirSync(sourceDir).forEach(file => {
+    fs.writeFileSync(
+        `${destDir}/${file}`,
+        fs.readFileSync(`${sourceDir}/${file}`, 'utf8'),
+    );
+});
 console.log('Pre-Build finished.');

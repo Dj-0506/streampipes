@@ -23,16 +23,18 @@
             [rawPipelineModel]="rawPipelineModel"
             [pipelineCanvasMetadata]="pipelineCanvasMetadata"
             [allElements]="allElements"
-            [jsplumbBridge]="JsplumbBridge"
+            [jsplumbBridge]="jsplumbBridge"
             [previewModeActive]="previewModeActive"
             (clearAssemblyEmitter)="clearAssembly()"
             (togglePreviewEmitter)="togglePreview()"
             (savePipelineEmitter)="submit()"
+            (displayPipelineTemplateEmitter)="displayPipelineTemplate($event)"
         >
         </sp-pipeline-assembly-options>
     </div>
     <div id="outerAssemblyArea" class="outerAssembly assembly-border">
         <sp-pipeline-assembly-drawing-area
+            *ngIf="rawPipelineModel"
             #drawingAreaComponent
             fxFlex="100"
             style="position: relative"
@@ -42,7 +44,7 @@
             [rawPipelineModel]="rawPipelineModel"
             [pipelineCanvasMetadata]="pipelineCanvasMetadata"
             [pipelineCanvasMetadataAvailable]="pipelineCanvasMetadataAvailable"
-            [jsplumbBridge]="JsplumbBridge"
+            [jsplumbBridge]="jsplumbBridge"
         >
         </sp-pipeline-assembly-drawing-area>
     </div>

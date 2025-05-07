@@ -36,7 +36,7 @@
                 ></sp-data-export-item>
                 <sp-data-export-item
                     [exportItems]="config.dataViews"
-                    sectionTitle="Data Views"
+                    sectionTitle="Charts"
                 ></sp-data-export-item>
                 <sp-data-export-item
                     [exportItems]="config.dataSources"
@@ -54,6 +54,10 @@
                     [exportItems]="config.pipelines"
                     sectionTitle="Pipelines"
                 ></sp-data-export-item>
+                <sp-generic-storage-items
+                    [exportItems]="config.genericStorageDocuments"
+                >
+                </sp-generic-storage-items>
             </div>
         </div>
         <div

@@ -24,6 +24,7 @@ import { Observable } from 'rxjs';
 import { PlatformServicesCommons } from './commons.service';
 import {
     AdapterDescription,
+    CompactAdapter,
     Message,
     PipelineUpdateInfo,
 } from '../model/gen/streampipes-model';
@@ -55,6 +56,15 @@ export class AdapterService {
             );
     }
 
+    convertToCompactAdapter(
+        adapterDescription: AdapterDescription,
+    ): Observable<CompactAdapter> {
+        return this.http.post<CompactAdapter>(
+            this.connectPath + `/master/adapters/compact`,
+            adapterDescription,
+        );
+    }
+
     requestAdapterDescriptions(path: string): Observable<AdapterDescription[]> {
         return this.http.get(this.connectPath + path).pipe(
             map(response => {
@@ -65,9 +75,16 @@ export class AdapterService {
         );
     }
 
-    stopAdapter(adapter: AdapterDescription): Observable<Message> {
+    stopAdapter(
+        adapter: AdapterDescription,
+        forceStop = false,
+    ): Observable<Message> {
         return this.http
-            .post(this.adapterMasterUrl + adapter.elementId + '/stop', {})
+            .post(
+                this.adapterMasterUrl + adapter.elementId + '/stop',
+                {},
+                { params: { forceStop } },
+            )
             .pipe(map(response => Message.fromData(response as any)));
     }
 

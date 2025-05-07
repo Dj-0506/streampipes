@@ -24,6 +24,8 @@ import {
     SpAssetModel,
 } from '@streampipes/platform-services';
 import {
+    ConfirmDialogComponent,
+    CurrentUserService,
     DialogService,
     PanelType,
     SpAssetBrowserService,
@@ -33,6 +35,8 @@ import { SpAssetRoutes } from '../../assets.routes';
 import { Router } from '@angular/router';
 import { SpCreateAssetDialogComponent } from '../../dialog/create-asset/create-asset-dialog.component';
 import { IdGeneratorService } from '../../../core-services/id-generator/id-generator.service';
+import { UserPrivilege } from '../../../_enums/user-privilege.enum';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
     selector: 'sp-asset-overview',
@@ -47,6 +51,8 @@ export class SpAssetOverviewComponent implements OnInit {
     dataSource: MatTableDataSource<SpAssetModel> =
         new MatTableDataSource<SpAssetModel>();
 
+    hasWritePrivilege = false;
+
     constructor(
         private genericStorageService: GenericStorageService,
         private breadcrumbService: SpBreadcrumbService,
@@ -54,9 +60,14 @@ export class SpAssetOverviewComponent implements OnInit {
         private router: Router,
         private idGeneratorService: IdGeneratorService,
         private assetBrowserService: SpAssetBrowserService,
+        private currentUserService: CurrentUserService,
+        private dialog: MatDialog,
     ) {}
 
     ngOnInit(): void {
+        this.hasWritePrivilege = this.currentUserService.hasRole(
+            UserPrivilege.PRIVILEGE_WRITE_ASSETS,
+        );
         this.breadcrumbService.updateBreadcrumb(
             this.breadcrumbService.getRootLink(SpAssetRoutes.BASE),
         );
@@ -110,15 +121,29 @@ export class SpAssetOverviewComponent implements OnInit {
     }
 
     deleteAsset(asset: SpAssetModel) {
-        this.genericStorageService
-            .deleteDocument(
-                AssetConstants.ASSET_APP_DOC_NAME,
-                asset._id,
-                asset._rev,
-            )
-            .subscribe(() => {
-                this.loadAssets();
-                this.assetBrowserService.loadAssetData();
-            });
+        const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+            width: '500px',
+            data: {
+                title: 'Are you sure you want to delete this asset?',
+                subtitle: 'This action cannot be reversed!',
+                cancelTitle: 'Cancel',
+                okTitle: 'Delete Asset',
+                confirmAndCancel: true,
+            },
+        });
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+                this.genericStorageService
+                    .deleteDocument(
+                        AssetConstants.ASSET_APP_DOC_NAME,
+                        asset._id,
+                        asset._rev,
+                    )
+                    .subscribe(() => {
+                        this.loadAssets();
+                        this.assetBrowserService.loadAssetData();
+                    });
+            }
+        });
     }
 }

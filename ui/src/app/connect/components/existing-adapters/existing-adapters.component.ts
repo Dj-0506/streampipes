@@ -59,6 +59,7 @@ export class ExistingAdaptersComponent implements OnInit, OnDestroy {
     filteredAdapters: AdapterDescription[] = [];
 
     currentFilter: AdapterFilterSettingsModel;
+    operationInProgressAdapterId: string | undefined;
 
     @ViewChild(MatSort)
     sort: MatSort;
@@ -83,6 +84,10 @@ export class ExistingAdaptersComponent implements OnInit, OnDestroy {
 
     userSubscription: Subscription;
     tutorialActiveSubscription: Subscription;
+    currentFilterIds: Set<string> = new Set<string>();
+
+    startAdapterErrorText = 'Could not start adapter';
+    stopAdapterErrorText = 'Could not stop adapter';
 
     constructor(
         private adapterService: AdapterService,
@@ -113,29 +118,27 @@ export class ExistingAdaptersComponent implements OnInit, OnDestroy {
     }
 
     startAdapter(adapter: AdapterDescription) {
+        this.operationInProgressAdapterId = adapter.elementId;
         this.adapterService.startAdapter(adapter).subscribe(
             _ => {
                 this.getAdaptersRunning();
             },
             error => {
-                this.openAdapterStatusErrorDialog(
-                    error.error,
-                    'Could not start adapter',
-                );
+                this.operationInProgressAdapterId = undefined;
+                this.openAdapterStatusErrorDialog(adapter, error.error, true);
             },
         );
     }
 
-    stopAdapter(adapter: AdapterDescription) {
-        this.adapterService.stopAdapter(adapter).subscribe(
+    stopAdapter(adapter: AdapterDescription, forceStop = false) {
+        this.operationInProgressAdapterId = adapter.elementId;
+        this.adapterService.stopAdapter(adapter, forceStop).subscribe(
             _ => {
                 this.getAdaptersRunning();
             },
             error => {
-                this.openAdapterStatusErrorDialog(
-                    error.error,
-                    'Could not stop adapter',
-                );
+                this.operationInProgressAdapterId = undefined;
+                this.openAdapterStatusErrorDialog(adapter, error.error, false);
             },
         );
     }
@@ -169,15 +172,32 @@ export class ExistingAdaptersComponent implements OnInit, OnDestroy {
         });
     }
 
-    openAdapterStatusErrorDialog(message: SpLogMessage, title: string) {
-        this.dialogService.open(SpExceptionDetailsDialogComponent, {
-            panelType: PanelType.STANDARD_PANEL,
-            title: 'Adapter Status',
-            width: '70vw',
-            data: {
-                message: message,
-                title: title,
+    openAdapterStatusErrorDialog(
+        adapter: AdapterDescription,
+        message: SpLogMessage,
+        startAction: boolean,
+    ) {
+        const title = startAction
+            ? this.startAdapterErrorText
+            : this.stopAdapterErrorText;
+        const dialogRef = this.dialogService.open(
+            SpExceptionDetailsDialogComponent,
+            {
+                panelType: PanelType.STANDARD_PANEL,
+                title: 'Adapter Status',
+                width: '70vw',
+                data: {
+                    message: message,
+                    title: title,
+                    additionalButton: !startAction,
+                    additionalButtonText: 'Reset adapter state',
+                },
             },
+        );
+        dialogRef.afterClosed().subscribe(forceStop => {
+            if (forceStop) {
+                this.stopAdapter(adapter, true);
+            }
         });
     }
 
@@ -249,7 +269,8 @@ export class ExistingAdaptersComponent implements OnInit, OnDestroy {
         this.adapterService.getAdapters().subscribe(adapters => {
             this.existingAdapters = adapters;
             this.existingAdapters.sort((a, b) => a.name.localeCompare(b.name));
-            this.applyAdapterFilters();
+            this.applyAdapterFilters(this.currentFilterIds);
+            this.operationInProgressAdapterId = undefined;
             this.getMonitoringInfos(adapters);
             setTimeout(() => {
                 this.dataSource.sort = this.sort;
@@ -257,7 +278,8 @@ export class ExistingAdaptersComponent implements OnInit, OnDestroy {
         });
     }
 
-    applyAdapterFilters(elementIds: Set<string> = new Set<string>()): void {
+    applyAdapterFilters(elementIds: Set<string>): void {
+        this.currentFilterIds = elementIds;
         this.filteredAdapters = this.adapterFilter
             .transform(this.existingAdapters, this.currentFilter)
             .filter(a => {
@@ -283,7 +305,7 @@ export class ExistingAdaptersComponent implements OnInit, OnDestroy {
     applyFilter(filter: AdapterFilterSettingsModel) {
         this.currentFilter = filter;
         if (this.dataSource) {
-            this.applyAdapterFilters();
+            this.applyAdapterFilters(this.currentFilterIds);
         }
     }
 

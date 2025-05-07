@@ -31,9 +31,12 @@ export class OpcUaUtils {
         ConnectUtils.selectAdapter(adapterInput.adapterType);
 
         // Wait for the first static property to be rendered
-        cy.dataCy(adapterInput.adapterConfiguration[0].selector).should(
-            'be.visible',
-        );
+        cy.dataCy(adapterInput.adapterConfiguration[0].selector, {
+            timeout: 10000,
+        })
+            .scrollIntoView()
+            .should('be.visible');
+
         // Validate that no error is not shown when nothing is configured
         cy.dataCy('reloading-nodes', { timeout: 3000 }).should('not.exist');
         ErrorMessageUtils.getExceptionComponent().should('not.exist');
@@ -79,13 +82,18 @@ export class OpcUaUtils {
 
         if (pullMode) {
             builder.addInput('radio', 'adapter_type-pull_mode', '');
-            builder.addInput('input', 'undefined-PULLING_INTERVAL-0', '1000');
+            builder.addInput(
+                'input',
+                'undefined-pull-mode-group-0-PULLING_INTERVAL-0',
+                '1000',
+            );
         } else {
             builder.addInput('radio', 'adapter_type-subscription_mode', '');
         }
 
         builder
-            .addInput('radio', 'access_mode-none', '')
+            .addInput('radio', 'securitymode-none', '')
+            .addInput('radio', 'userauthentication-anonymous', '')
             .addInput('radio', 'opc_host_or_url-url', '')
             .addInput(
                 'input',

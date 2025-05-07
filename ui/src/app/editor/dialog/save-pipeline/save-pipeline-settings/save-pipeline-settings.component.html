@@ -17,6 +17,30 @@
   -->
 
 <div fxLayout="column">
+    <form [formGroup]="submitPipelineForm">
+        <div fxFlex="100" fxLayout="column">
+            <mat-form-field fxFlex color="accent">
+                <mat-label>Pipeline Name</mat-label>
+                <input
+                    [formControlName]="'pipelineName'"
+                    data-cy="sp-editor-pipeline-name"
+                    matInput
+                    name="pipelineName"
+                    (blur)="triggerTutorial()"
+                />
+                <mat-error
+                    >Pipeline name must have between 3 and 40 characters.
+                </mat-error>
+            </mat-form-field>
+            <mat-form-field fxFlex color="accent">
+                <mat-label>Description</mat-label>
+                <input [formControlName]="'pipelineDescription'" matInput />
+                <mat-error
+                    >Pipeline description must not have more than 80 characters.
+                </mat-error>
+            </mat-form-field>
+        </div>
+    </form>
     <div
         id="overwriteCheckbox"
         class="checkbox"
@@ -33,7 +57,7 @@
                 style="padding-left: 0"
                 data-cy="pipeline-update-mode-update"
             >
-                Update pipeline <b>{{ currentPipelineName }}</b>
+                Update pipeline
             </mat-radio-button>
             <mat-radio-button
                 [value]="'clone'"
@@ -44,31 +68,6 @@
             </mat-radio-button>
         </mat-radio-group>
     </div>
-    <form [formGroup]="submitPipelineForm">
-        <div
-            fxFlex="100"
-            fxLayout="column"
-            *ngIf="
-                !storageOptions.updateModeActive ||
-                storageOptions.updateMode === 'clone'
-            "
-        >
-            <mat-form-field fxFlex color="accent">
-                <mat-label>Pipeline Name</mat-label>
-                <input
-                    [formControlName]="'pipelineName'"
-                    data-cy="sp-editor-pipeline-name"
-                    matInput
-                    name="pipelineName"
-                    (blur)="triggerTutorial()"
-                />
-            </mat-form-field>
-            <mat-form-field fxFlex color="accent">
-                <mat-label>Description</mat-label>
-                <input [formControlName]="'pipelineDescription'" matInput />
-            </mat-form-field>
-        </div>
-    </form>
     <mat-checkbox
         [(ngModel)]="storageOptions.startPipelineAfterStorage"
         color="accent"
@@ -83,4 +82,17 @@
     >
         Navigate to pipeline overview afterwards
     </mat-checkbox>
+    <div class="mt-10">
+        <mat-expansion-panel class="mat-elevation-z0 border-1">
+            <mat-expansion-panel-header
+                >Show pipeline configuration as code</mat-expansion-panel-header
+            >
+            <sp-configuration-code-panel
+                *ngIf="compactPipeline"
+                [configuration]="compactPipeline"
+                maxHeight="none"
+            >
+            </sp-configuration-code-panel>
+        </mat-expansion-panel>
+    </div>
 </div>

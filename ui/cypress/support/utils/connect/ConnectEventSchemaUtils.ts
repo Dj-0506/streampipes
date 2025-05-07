@@ -19,6 +19,14 @@
 import { ConnectBtns } from './ConnectBtns';
 
 export class ConnectEventSchemaUtils {
+    public static markPropertyAsMeasurement(propertyName: string) {
+        cy.dataCy('property-scope-' + propertyName, { timeout: 10000 })
+            .click()
+            .get('.mdc-list-item__primary-text')
+            .contains('Measurement')
+            .click();
+    }
+
     public static markPropertyAsDimension(propertyName: string) {
         cy.dataCy('property-scope-' + propertyName, { timeout: 10000 })
             .click()
@@ -175,8 +183,7 @@ export class ConnectEventSchemaUtils {
 
         // Edit new property
         cy.dataCy('connect-add-field-name', { timeout: 10000 }).type(
-            '{backspace}{backspace}{backspace}{backspace}{backspace}' +
-                propertyName,
+            propertyName,
         );
         cy.dataCy('connect-add-field-name-button').click();
 
@@ -231,7 +238,9 @@ export class ConnectEventSchemaUtils {
             .click();
         cy.dataCy('sp-save-edit-property').click();
         // validate that static value is persisted
-        cy.dataCy('edit-' + propertyName, { timeout: 10000 }).click({
+        cy.dataCy('edit-' + propertyName.toLowerCase(), {
+            timeout: 10000,
+        }).click({
             force: true,
         });
         ConnectBtns.changeRuntimeType().contains(dataType);
@@ -255,6 +264,10 @@ export class ConnectEventSchemaUtils {
         cy.get('#event-schema-next-button').parent().should('not.be.disabled');
     }
 
+    public static schemaPreviewResultEvent() {
+        return cy.dataCy('schema-preview-result-event', { timeout: 10000 });
+    }
+
     public static finishEventSchemaConfiguration() {
         // Click next
         cy.dataCy('sp-connect-schema-editor', { timeout: 10000 }).should(
@@ -270,7 +283,18 @@ export class ConnectEventSchemaUtils {
         ConnectEventSchemaUtils.validateRuntimeName(propertyName);
     }
 
-    //
+    public static regexValueInput() {
+        return cy.dataCy('regex-value');
+    }
+
+    public static regexReplaceWithValueInput() {
+        return cy.dataCy('regex-replace-with-value');
+    }
+
+    public static regexReplaceAllCheckbox() {
+        return cy.dataCy('regex-replace-all-value');
+    }
+
     /**
      * Function to escape special characters in a string for use in Cypress
      * selectors

@@ -19,14 +19,16 @@ package org.apache.streampipes.storage.couchdb;
 
 import org.apache.streampipes.model.client.user.Group;
 import org.apache.streampipes.model.client.user.PasswordRecoveryToken;
+import org.apache.streampipes.model.client.user.Privilege;
+import org.apache.streampipes.model.client.user.Role;
 import org.apache.streampipes.model.client.user.UserActivationToken;
 import org.apache.streampipes.model.dashboard.DashboardModel;
-import org.apache.streampipes.model.dashboard.DashboardWidgetModel;
 import org.apache.streampipes.model.datalake.DataExplorerWidgetModel;
 import org.apache.streampipes.model.datalake.DataLakeMeasure;
 import org.apache.streampipes.model.extensions.configuration.SpServiceConfiguration;
 import org.apache.streampipes.model.extensions.svcdiscovery.SpServiceRegistration;
 import org.apache.streampipes.model.file.FileMetadata;
+import org.apache.streampipes.model.template.CompactPipelineTemplate;
 import org.apache.streampipes.storage.api.CRUDStorage;
 import org.apache.streampipes.storage.api.IAdapterStorage;
 import org.apache.streampipes.storage.api.IDataProcessorStorage;
@@ -59,6 +61,8 @@ import org.apache.streampipes.storage.couchdb.impl.PipelineCanvasMetadataStorage
 import org.apache.streampipes.storage.couchdb.impl.PipelineElementDescriptionStorageImpl;
 import org.apache.streampipes.storage.couchdb.impl.PipelineElementTemplateStorageImpl;
 import org.apache.streampipes.storage.couchdb.impl.PipelineStorageImpl;
+import org.apache.streampipes.storage.couchdb.impl.PrivilegeStorageImpl;
+import org.apache.streampipes.storage.couchdb.impl.RoleStorageImpl;
 import org.apache.streampipes.storage.couchdb.impl.UserStorage;
 import org.apache.streampipes.storage.couchdb.utils.Utils;
 
@@ -127,26 +131,10 @@ public enum CouchDbStorageManager implements INoSqlStorage {
   }
 
   @Override
-  public CRUDStorage<DashboardModel> getDashboardStorage() {
-    return new DefaultCrudStorage<>(
-        () -> Utils.getCouchDbGsonClient("dashboard"),
-        DashboardModel.class
-    );
-  }
-
-  @Override
   public CRUDStorage<DashboardModel> getDataExplorerDashboardStorage() {
     return new DefaultCrudStorage<>(
         () -> Utils.getCouchDbGsonClient("dataexplorerdashboard"),
         DashboardModel.class
-    );
-  }
-
-  @Override
-  public CRUDStorage<DashboardWidgetModel> getDashboardWidgetStorage() {
-    return new DefaultCrudStorage<>(
-        () -> Utils.getCouchDbGsonClient("dashboardwidget"),
-        DashboardWidgetModel.class
     );
   }
 
@@ -230,5 +218,23 @@ public enum CouchDbStorageManager implements INoSqlStorage {
   @Override
   public ISpCoreConfigurationStorage getSpCoreConfigurationStorage() {
     return new CoreConfigurationStorageImpl();
+  }
+
+  @Override
+  public CRUDStorage<Role> getRoleStorage() {
+    return new RoleStorageImpl();
+  }
+
+  @Override
+  public CRUDStorage<Privilege> getPrivilegeStorage() {
+    return new PrivilegeStorageImpl();
+  }
+
+  @Override
+  public CRUDStorage<CompactPipelineTemplate> getPipelineTemplateStorage() {
+    return new DefaultCrudStorage<>(
+        () -> Utils.getCouchDbGsonClient("pipeline-templates"),
+        CompactPipelineTemplate.class
+    );
   }
 }

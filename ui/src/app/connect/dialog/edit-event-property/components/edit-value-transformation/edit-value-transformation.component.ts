@@ -40,6 +40,7 @@ export class EditValueTransformationComponent implements OnInit {
     @Input() isListProperty: boolean;
     @Input() isPrimitiveProperty: boolean;
     @Input() isNumericProperty: boolean;
+    @Input() isStringProperty: boolean;
 
     addedByUser: boolean;
     staticValue: string;
@@ -60,6 +61,9 @@ export class EditValueTransformationComponent implements OnInit {
 
     applyStaticValue(value: any) {
         this.cachedProperty.elementId =
-            this.staticValueTransformService.makeElementId(value);
+            this.staticValueTransformService.makeElementId(
+                this.cachedProperty.elementId,
+                value,
+            );
     }
 }

@@ -37,6 +37,7 @@ import { forkJoin } from 'rxjs';
 import { Router } from '@angular/router';
 import { PipelineAssemblyDrawingAreaComponent } from './pipeline-assembly-drawing-area/pipeline-assembly-drawing-area.component';
 import { PipelineAssemblyOptionsComponent } from './pipeline-assembly-options/pipeline-assembly-options.component';
+import { JsplumbService } from '../../services/jsplumb.service';
 
 @Component({
     selector: 'sp-pipeline-assembly',
@@ -62,7 +63,7 @@ export class PipelineAssemblyComponent implements AfterViewInit {
     previewModeActive = false;
     readonly: boolean;
 
-    JsplumbBridge: JsplumbBridge;
+    jsplumbBridge: JsplumbBridge;
 
     @ViewChild('assemblyOptionsComponent')
     assemblyOptionsComponent: PipelineAssemblyOptionsComponent;
@@ -77,10 +78,11 @@ export class PipelineAssemblyComponent implements AfterViewInit {
         public pipelineValidationService: PipelineValidationService,
         private dialogService: DialogService,
         private router: Router,
+        private jsplumbService: JsplumbService,
     ) {}
 
     ngAfterViewInit() {
-        this.JsplumbBridge = this.jsPlumbFactoryService.getJsplumbBridge(
+        this.jsplumbBridge = this.jsPlumbFactoryService.getJsplumbBridge(
             this.readonly,
         );
     }
@@ -90,10 +92,10 @@ export class PipelineAssemblyComponent implements AfterViewInit {
      */
     clearAssembly() {
         this.editorService.makePipelineAssemblyEmpty(true);
-        this.JsplumbBridge.deleteEveryEndpoint();
         this.rawPipelineModel = [];
+        this.jsplumbBridge.deleteEveryEndpoint();
         this.drawingAreaComponent.resetZoom();
-        this.JsplumbBridge.repaintEverything();
+        this.jsplumbBridge.repaintEverything();
 
         forkJoin([
             this.editorService.removePipelineFromCache(),
@@ -110,7 +112,6 @@ export class PipelineAssemblyComponent implements AfterViewInit {
      * Sends the pipeline to the server
      */
     submit() {
-        //const pipelineModel = this.pipelineComponent.rawPipelineModel;
         const pipelineModel = this.rawPipelineModel;
         const pipeline = this.objectProvider.makePipeline(pipelineModel);
         this.pipelinePositioningService.collectPipelineElementPositions(
@@ -152,5 +153,28 @@ export class PipelineAssemblyComponent implements AfterViewInit {
 
     triggerCacheUpdate(): void {
         this.assemblyOptionsComponent.triggerCacheUpdate();
+    }
+
+    displayPipelineTemplate(pipeline: Pipeline) {
+        // Clears old pipeline before new elements are added
+        this.clearAssembly();
+        this.jsplumbBridge.reset();
+        this.pipelineCanvasMetadata = new PipelineCanvasMetadata();
+        this.pipelineCanvasMetadataAvailable = false;
+
+        this.originalPipeline = pipeline;
+        this.rawPipelineModel = [];
+        this.rawPipelineModel = this.jsplumbService.makeRawPipeline(
+            pipeline,
+            false,
+        );
+        setTimeout(() => {
+            this.drawingAreaComponent.displayPipelineInEditor(
+                true,
+                this.pipelineCanvasMetadata,
+            );
+
+            this.triggerCacheUpdate();
+        });
     }
 }

@@ -20,11 +20,10 @@
 /* tslint:disable */
 /* eslint-disable */
 // @ts-nocheck
-// Generated using typescript-generator version 3.2.1263 on 2024-09-03 17:38:51.
+// Generated using typescript-generator version 3.2.1263 on 2025-04-04 12:37:31.
 
 export class NamedStreamPipesEntity implements Storable {
     '@class':
-        | 'org.apache.streampipes.model.template.PipelineTemplateDescription'
         | 'org.apache.streampipes.model.SpDataStream'
         | 'org.apache.streampipes.model.base.VersionedNamedStreamPipesEntity'
         | 'org.apache.streampipes.model.connect.adapter.AdapterDescription'
@@ -209,6 +208,7 @@ export class TransformationRuleDescription {
         | 'org.apache.streampipes.model.connect.rules.value.AddValueTransformationRuleDescription'
         | 'org.apache.streampipes.model.connect.rules.value.TimestampTranfsformationRuleDescription'
         | 'org.apache.streampipes.model.connect.rules.value.UnitTransformRuleDescription'
+        | 'org.apache.streampipes.model.connect.rules.value.RegexTransformationRuleDescription'
         | 'org.apache.streampipes.model.connect.rules.value.ChangeDatatypeTransformationRuleDescription'
         | 'org.apache.streampipes.model.connect.rules.value.CorrectionValueTransformationRuleDescription'
         | 'org.apache.streampipes.model.connect.rules.stream.StreamTransformationRuleDescription'
@@ -261,6 +261,8 @@ export class TransformationRuleDescription {
                 return DeleteRuleDescription.fromData(data);
             case 'org.apache.streampipes.model.connect.rules.schema.RenameRuleDescription':
                 return RenameRuleDescription.fromData(data);
+            case 'org.apache.streampipes.model.connect.rules.value.RegexTransformationRuleDescription':
+                return RegexTransformationRuleDescription.fromData(data);
             case 'org.apache.streampipes.model.connect.rules.schema.MoveRuleDescription':
                 return MoveRuleDescription.fromData(data);
             case 'org.apache.streampipes.model.connect.rules.value.ChangeDatatypeTransformationRuleDescription':
@@ -282,6 +284,7 @@ export class ValueTransformationRuleDescription extends TransformationRuleDescri
         | 'org.apache.streampipes.model.connect.rules.value.AddValueTransformationRuleDescription'
         | 'org.apache.streampipes.model.connect.rules.value.TimestampTranfsformationRuleDescription'
         | 'org.apache.streampipes.model.connect.rules.value.UnitTransformRuleDescription'
+        | 'org.apache.streampipes.model.connect.rules.value.RegexTransformationRuleDescription'
         | 'org.apache.streampipes.model.connect.rules.value.ChangeDatatypeTransformationRuleDescription'
         | 'org.apache.streampipes.model.connect.rules.value.CorrectionValueTransformationRuleDescription';
 
@@ -316,6 +319,8 @@ export class ValueTransformationRuleDescription extends TransformationRuleDescri
                 return CorrectionValueTransformationRuleDescription.fromData(
                     data,
                 );
+            case 'org.apache.streampipes.model.connect.rules.value.RegexTransformationRuleDescription':
+                return RegexTransformationRuleDescription.fromData(data);
         }
     }
 }
@@ -606,7 +611,9 @@ export class AssetExportConfiguration {
     dataSources: ExportItem[];
     dataViews: ExportItem[];
     files: ExportItem[];
+    genericStorageDocuments: ExportItem[];
     overrideBrokerSettings: boolean;
+    overwriteExistingDocuments: boolean;
     pipelines: ExportItem[];
 
     static fromData(
@@ -636,31 +643,13 @@ export class AssetExportConfiguration {
             data.dataViews,
         );
         instance.files = __getCopyArrayFn(ExportItem.fromData)(data.files);
+        instance.genericStorageDocuments = __getCopyArrayFn(
+            ExportItem.fromData,
+        )(data.genericStorageDocuments);
         instance.overrideBrokerSettings = data.overrideBrokerSettings;
+        instance.overwriteExistingDocuments = data.overwriteExistingDocuments;
         instance.pipelines = __getCopyArrayFn(ExportItem.fromData)(
             data.pipelines,
-        );
-        return instance;
-    }
-}
-
-export class BoundPipelineElement {
-    connectedTo: BoundPipelineElement[];
-    pipelineElementTemplate: InvocableStreamPipesEntity;
-
-    static fromData(
-        data: BoundPipelineElement,
-        target?: BoundPipelineElement,
-    ): BoundPipelineElement {
-        if (!data) {
-            return data;
-        }
-        const instance = target || new BoundPipelineElement();
-        instance.connectedTo = __getCopyArrayFn(BoundPipelineElement.fromData)(
-            data.connectedTo,
-        );
-        instance.pipelineElementTemplate = InvocableStreamPipesEntity.fromData(
-            data.pipelineElementTemplate,
         );
         return instance;
     }
@@ -769,6 +758,150 @@ export class ColorPickerStaticProperty extends StaticProperty {
         const instance = target || new ColorPickerStaticProperty();
         super.fromData(data, instance);
         instance.selectedColor = data.selectedColor;
+        return instance;
+    }
+}
+
+export class CompactAdapter {
+    appId: string;
+    configuration: { [index: string]: any }[];
+    createOptions: CreateOptions;
+    description: string;
+    enrich: EnrichmentConfig;
+    id: string;
+    name: string;
+    schema: { [index: string]: CompactEventProperty };
+    transform: TransformationConfig;
+
+    static fromData(
+        data: CompactAdapter,
+        target?: CompactAdapter,
+    ): CompactAdapter {
+        if (!data) {
+            return data;
+        }
+        const instance = target || new CompactAdapter();
+        instance.appId = data.appId;
+        instance.configuration = __getCopyArrayFn(
+            __getCopyObjectFn(__identity<any>()),
+        )(data.configuration);
+        instance.createOptions = CreateOptions.fromData(data.createOptions);
+        instance.description = data.description;
+        instance.enrich = EnrichmentConfig.fromData(data.enrich);
+        instance.id = data.id;
+        instance.name = data.name;
+        instance.schema = __getCopyObjectFn(CompactEventProperty.fromData)(
+            data.schema,
+        );
+        instance.transform = TransformationConfig.fromData(data.transform);
+        return instance;
+    }
+}
+
+export class CompactEventProperty {
+    description: string;
+    label: string;
+    propertyScope: string;
+    semanticType: string;
+
+    static fromData(
+        data: CompactEventProperty,
+        target?: CompactEventProperty,
+    ): CompactEventProperty {
+        if (!data) {
+            return data;
+        }
+        const instance = target || new CompactEventProperty();
+        instance.description = data.description;
+        instance.label = data.label;
+        instance.propertyScope = data.propertyScope;
+        instance.semanticType = data.semanticType;
+        return instance;
+    }
+}
+
+export class CompactPipeline {
+    createOptions: CreateOptions;
+    description: string;
+    id: string;
+    name: string;
+    pipelineElements: CompactPipelineElement[];
+
+    static fromData(
+        data: CompactPipeline,
+        target?: CompactPipeline,
+    ): CompactPipeline {
+        if (!data) {
+            return data;
+        }
+        const instance = target || new CompactPipeline();
+        instance.createOptions = CreateOptions.fromData(data.createOptions);
+        instance.description = data.description;
+        instance.id = data.id;
+        instance.name = data.name;
+        instance.pipelineElements = __getCopyArrayFn(
+            CompactPipelineElement.fromData,
+        )(data.pipelineElements);
+        return instance;
+    }
+}
+
+export class CompactPipelineElement {
+    configuration: { [index: string]: any }[];
+    connectedTo: string[];
+    id: string;
+    output: OutputConfiguration;
+    ref: string;
+    type: string;
+
+    static fromData(
+        data: CompactPipelineElement,
+        target?: CompactPipelineElement,
+    ): CompactPipelineElement {
+        if (!data) {
+            return data;
+        }
+        const instance = target || new CompactPipelineElement();
+        instance.configuration = __getCopyArrayFn(
+            __getCopyObjectFn(__identity<any>()),
+        )(data.configuration);
+        instance.connectedTo = __getCopyArrayFn(__identity<string>())(
+            data.connectedTo,
+        );
+        instance.id = data.id;
+        instance.output = OutputConfiguration.fromData(data.output);
+        instance.ref = data.ref;
+        instance.type = data.type;
+        return instance;
+    }
+}
+
+export class CompactPipelineTemplate implements Storable {
+    description: string;
+    elementId: string;
+    name: string;
+    pipeline: CompactPipelineElement[];
+    placeholders: PipelinePlaceholders;
+    rev: string;
+
+    static fromData(
+        data: CompactPipelineTemplate,
+        target?: CompactPipelineTemplate,
+    ): CompactPipelineTemplate {
+        if (!data) {
+            return data;
+        }
+        const instance = target || new CompactPipelineTemplate();
+        instance.description = data.description;
+        instance.elementId = data.elementId;
+        instance.name = data.name;
+        instance.pipeline = __getCopyArrayFn(CompactPipelineElement.fromData)(
+            data.pipeline,
+        );
+        instance.placeholders = PipelinePlaceholders.fromData(
+            data.placeholders,
+        );
+        instance.rev = data.rev;
         return instance;
     }
 }
@@ -899,6 +1032,24 @@ export class CreateNestedRuleDescription extends SchemaTransformationRuleDescrip
     }
 }
 
+export class CreateOptions {
+    persist: boolean;
+    start: boolean;
+
+    static fromData(
+        data: CreateOptions,
+        target?: CreateOptions,
+    ): CreateOptions {
+        if (!data) {
+            return data;
+        }
+        const instance = target || new CreateOptions();
+        instance.persist = data.persist;
+        instance.start = data.start;
+        return instance;
+    }
+}
+
 export class CustomOutputStrategy extends OutputStrategy {
     '@class': 'org.apache.streampipes.model.output.CustomOutputStrategy';
     'availablePropertyKeys': string[];
@@ -945,8 +1096,9 @@ export class CustomTransformOutputStrategy extends OutputStrategy {
     }
 }
 
-export class DashboardEntity implements Storable {
+export class DashboardEntity implements Storable, SpResource {
     elementId: string;
+    metadata: ResourceMetadata;
     rev: string;
 
     static fromData(
@@ -958,6 +1110,7 @@ export class DashboardEntity implements Storable {
         }
         const instance = target || new DashboardEntity();
         instance.elementId = data.elementId;
+        instance.metadata = ResourceMetadata.fromData(data.metadata);
         instance.rev = data.rev;
         return instance;
     }
@@ -970,6 +1123,7 @@ export class DashboardItem {
     name: string;
     rows: number;
     settings: string[];
+    timeSettings: { [index: string]: any };
     x: number;
     y: number;
 
@@ -989,13 +1143,16 @@ export class DashboardItem {
         instance.settings = __getCopyArrayFn(__identity<string>())(
             data.settings,
         );
+        instance.timeSettings = __getCopyObjectFn(__identity<any>())(
+            data.timeSettings,
+        );
         instance.x = data.x;
         instance.y = data.y;
         return instance;
     }
 }
 
-export class DashboardModel implements Storable {
+export class DashboardModel implements Storable, SpResource {
     couchDbId: string;
     dashboardGeneralSettings: { [index: string]: any };
     dashboardLiveSettings: { [index: string]: any };
@@ -1004,6 +1161,7 @@ export class DashboardModel implements Storable {
     displayHeader: boolean;
     elementId: string;
     id: string;
+    metadata: ResourceMetadata;
     name: string;
     rev: string;
     widgets: DashboardItem[];
@@ -1030,66 +1188,12 @@ export class DashboardModel implements Storable {
         instance.displayHeader = data.displayHeader;
         instance.elementId = data.elementId;
         instance.id = data.id;
+        instance.metadata = ResourceMetadata.fromData(data.metadata);
         instance.name = data.name;
         instance.rev = data.rev;
         instance.widgets = __getCopyArrayFn(DashboardItem.fromData)(
             data.widgets,
         );
-        return instance;
-    }
-}
-
-export class DashboardWidgetModel extends DashboardEntity {
-    dashboardWidgetSettings: DashboardWidgetSettings;
-    pipelineId: string;
-    visualizationName: string;
-    widgetId: string;
-    widgetType: string;
-
-    static fromData(
-        data: DashboardWidgetModel,
-        target?: DashboardWidgetModel,
-    ): DashboardWidgetModel {
-        if (!data) {
-            return data;
-        }
-        const instance = target || new DashboardWidgetModel();
-        super.fromData(data, instance);
-        instance.dashboardWidgetSettings = DashboardWidgetSettings.fromData(
-            data.dashboardWidgetSettings,
-        );
-        instance.pipelineId = data.pipelineId;
-        instance.visualizationName = data.visualizationName;
-        instance.widgetId = data.widgetId;
-        instance.widgetType = data.widgetType;
-        return instance;
-    }
-}
-
-export class DashboardWidgetSettings {
-    config: StaticPropertyUnion[];
-    requiredSchema: EventSchema;
-    widgetDescription: string;
-    widgetIconName: string;
-    widgetLabel: string;
-    widgetName: string;
-
-    static fromData(
-        data: DashboardWidgetSettings,
-        target?: DashboardWidgetSettings,
-    ): DashboardWidgetSettings {
-        if (!data) {
-            return data;
-        }
-        const instance = target || new DashboardWidgetSettings();
-        instance.config = __getCopyArrayFn(StaticProperty.fromDataUnion)(
-            data.config,
-        );
-        instance.requiredSchema = EventSchema.fromData(data.requiredSchema);
-        instance.widgetDescription = data.widgetDescription;
-        instance.widgetIconName = data.widgetIconName;
-        instance.widgetLabel = data.widgetLabel;
-        instance.widgetName = data.widgetName;
         return instance;
     }
 }
@@ -1372,6 +1476,22 @@ export interface EndpointSelectable {
     selectedEndpointUrl: string;
 }
 
+export class EnrichmentConfig {
+    timestamp: string;
+
+    static fromData(
+        data: EnrichmentConfig,
+        target?: EnrichmentConfig,
+    ): EnrichmentConfig {
+        if (!data) {
+            return data;
+        }
+        const instance = target || new EnrichmentConfig();
+        instance.timestamp = data.timestamp;
+        return instance;
+    }
+}
+
 export class ValueSpecification {
     '@class':
         | 'org.apache.streampipes.model.schema.QuantitativeValue'
@@ -1480,12 +1600,12 @@ export class EventProperty {
         | 'org.apache.streampipes.model.schema.EventPropertyPrimitive';
     'additionalMetadata': { [index: string]: any };
     'description': string;
-    'domainProperties': string[];
     'elementId': string;
     'label': string;
     'propertyScope': string;
     'runtimeId': string;
     'runtimeName': string;
+    'semanticType': string;
 
     static 'fromData'(
         data: EventProperty,
@@ -1500,14 +1620,12 @@ export class EventProperty {
             data.additionalMetadata,
         );
         instance.description = data.description;
-        instance.domainProperties = __getCopyArrayFn(__identity<string>())(
-            data.domainProperties,
-        );
         instance.elementId = data.elementId;
         instance.label = data.label;
         instance.propertyScope = data.propertyScope;
         instance.runtimeId = data.runtimeId;
         instance.runtimeName = data.runtimeName;
+        instance.semanticType = data.semanticType;
         return instance;
     }
 
@@ -2045,8 +2163,6 @@ export class KafkaTransportProtocol extends TransportProtocol {
     'maxRequestSize': string;
     'messageMaxBytes': string;
     'offset': string;
-    'zookeeperHost': string;
-    'zookeeperPort': number;
 
     static 'fromData'(
         data: KafkaTransportProtocol,
@@ -2065,8 +2181,6 @@ export class KafkaTransportProtocol extends TransportProtocol {
         instance.maxRequestSize = data.maxRequestSize;
         instance.messageMaxBytes = data.messageMaxBytes;
         instance.offset = data.offset;
-        instance.zookeeperHost = data.zookeeperHost;
-        instance.zookeeperPort = data.zookeeperPort;
         return instance;
     }
 }
@@ -2286,8 +2400,6 @@ export class MessagingSettings {
     prioritizedProtocols: SpProtocol[];
     pulsarUrl: string;
     supportedProtocols: string[];
-    zookeeperHost: string;
-    zookeeperPort: number;
 
     static fromData(
         data: MessagingSettings,
@@ -2316,8 +2428,6 @@ export class MessagingSettings {
         instance.supportedProtocols = __getCopyArrayFn(__identity<string>())(
             data.supportedProtocols,
         );
-        instance.zookeeperHost = data.zookeeperHost;
-        instance.zookeeperPort = data.zookeeperPort;
         return instance;
     }
 }
@@ -2440,6 +2550,26 @@ export class Option {
         instance.internalName = data.internalName;
         instance.name = data.name;
         instance.selected = data.selected;
+        return instance;
+    }
+}
+
+export class OutputConfiguration {
+    keep: string[];
+    userDefined: UserDefinedOutput[];
+
+    static fromData(
+        data: OutputConfiguration,
+        target?: OutputConfiguration,
+    ): OutputConfiguration {
+        if (!data) {
+            return data;
+        }
+        const instance = target || new OutputConfiguration();
+        instance.keep = __getCopyArrayFn(__identity<string>())(data.keep);
+        instance.userDefined = __getCopyArrayFn(UserDefinedOutput.fromData)(
+            data.userDefined,
+        );
         return instance;
     }
 }
@@ -2681,7 +2811,7 @@ export class PipelineElementTemplate implements Storable {
     couchDbRev: string;
     elementId: string;
     rev: string;
-    templateConfigs: { [index: string]: PipelineElementTemplateConfig };
+    templateConfigs: { [index: string]: any }[];
     templateDescription: string;
     templateName: string;
 
@@ -2698,31 +2828,11 @@ export class PipelineElementTemplate implements Storable {
         instance.couchDbRev = data.couchDbRev;
         instance.elementId = data.elementId;
         instance.rev = data.rev;
-        instance.templateConfigs = __getCopyObjectFn(
-            PipelineElementTemplateConfig.fromData,
+        instance.templateConfigs = __getCopyArrayFn(
+            __getCopyObjectFn(__identity<any>()),
         )(data.templateConfigs);
         instance.templateDescription = data.templateDescription;
         instance.templateName = data.templateName;
-        return instance;
-    }
-}
-
-export class PipelineElementTemplateConfig {
-    displayed: boolean;
-    editable: boolean;
-    value: any;
-
-    static fromData(
-        data: PipelineElementTemplateConfig,
-        target?: PipelineElementTemplateConfig,
-    ): PipelineElementTemplateConfig {
-        if (!data) {
-            return data;
-        }
-        const instance = target || new PipelineElementTemplateConfig();
-        instance.displayed = data.displayed;
-        instance.editable = data.editable;
-        instance.value = data.value;
         return instance;
     }
 }
@@ -2858,6 +2968,46 @@ export class PipelineOperationStatus {
     }
 }
 
+export class PipelinePlaceholderConfig {
+    id: string;
+    ref: string;
+
+    static fromData(
+        data: PipelinePlaceholderConfig,
+        target?: PipelinePlaceholderConfig,
+    ): PipelinePlaceholderConfig {
+        if (!data) {
+            return data;
+        }
+        const instance = target || new PipelinePlaceholderConfig();
+        instance.id = data.id;
+        instance.ref = data.ref;
+        return instance;
+    }
+}
+
+export class PipelinePlaceholders {
+    requiredConfigs: PipelinePlaceholderConfig[];
+    requiredStreamInputs: string[];
+
+    static fromData(
+        data: PipelinePlaceholders,
+        target?: PipelinePlaceholders,
+    ): PipelinePlaceholders {
+        if (!data) {
+            return data;
+        }
+        const instance = target || new PipelinePlaceholders();
+        instance.requiredConfigs = __getCopyArrayFn(
+            PipelinePlaceholderConfig.fromData,
+        )(data.requiredConfigs);
+        instance.requiredStreamInputs = __getCopyArrayFn(__identity<string>())(
+            data.requiredStreamInputs,
+        );
+        return instance;
+    }
+}
+
 export class PipelinePreviewModel {
     elementIdMappings: { [index: string]: string };
     previewId: string;
@@ -2900,59 +3050,26 @@ export class PipelineStatusMessage {
     }
 }
 
-export class PipelineTemplateDescription extends NamedStreamPipesEntity {
-    '@class': 'org.apache.streampipes.model.template.PipelineTemplateDescription';
-    'boundTo': BoundPipelineElement[];
-    'pipelineTemplateDescription': string;
-    'pipelineTemplateId': string;
-    'pipelineTemplateName': string;
+export class PipelineTemplateGenerationRequest {
+    pipelineDescription: string;
+    pipelineName: string;
+    streams: { [index: string]: string };
+    template: CompactPipelineTemplate;
 
-    static 'fromData'(
-        data: PipelineTemplateDescription,
-        target?: PipelineTemplateDescription,
-    ): PipelineTemplateDescription {
+    static fromData(
+        data: PipelineTemplateGenerationRequest,
+        target?: PipelineTemplateGenerationRequest,
+    ): PipelineTemplateGenerationRequest {
         if (!data) {
             return data;
         }
-        const instance = target || new PipelineTemplateDescription();
-        super.fromData(data, instance);
-        instance.boundTo = __getCopyArrayFn(BoundPipelineElement.fromData)(
-            data.boundTo,
+        const instance = target || new PipelineTemplateGenerationRequest();
+        instance.pipelineDescription = data.pipelineDescription;
+        instance.pipelineName = data.pipelineName;
+        instance.streams = __getCopyObjectFn(__identity<string>())(
+            data.streams,
         );
-        instance.pipelineTemplateDescription = data.pipelineTemplateDescription;
-        instance.pipelineTemplateId = data.pipelineTemplateId;
-        instance.pipelineTemplateName = data.pipelineTemplateName;
-        return instance;
-    }
-}
-
-export class PipelineTemplateInvocation {
-    '@class': 'org.apache.streampipes.model.template.PipelineTemplateInvocation';
-    'dataStreamId': string;
-    'kviName': string;
-    'pipelineTemplateDescription': PipelineTemplateDescription;
-    'pipelineTemplateId': string;
-    'staticProperties': StaticPropertyUnion[];
-
-    static 'fromData'(
-        data: PipelineTemplateInvocation,
-        target?: PipelineTemplateInvocation,
-    ): PipelineTemplateInvocation {
-        if (!data) {
-            return data;
-        }
-        const instance = target || new PipelineTemplateInvocation();
-        instance['@class'] = data['@class'];
-        instance.dataStreamId = data.dataStreamId;
-        instance.kviName = data.kviName;
-        instance.pipelineTemplateDescription =
-            PipelineTemplateDescription.fromData(
-                data.pipelineTemplateDescription,
-            );
-        instance.pipelineTemplateId = data.pipelineTemplateId;
-        instance.staticProperties = __getCopyArrayFn(
-            StaticProperty.fromDataUnion,
-        )(data.staticProperties);
+        instance.template = CompactPipelineTemplate.fromData(data.template);
         return instance;
     }
 }
@@ -3079,6 +3196,30 @@ export class QuantitativeValue extends ValueSpecification {
     }
 }
 
+export class RegexTransformationRuleDescription extends ValueTransformationRuleDescription {
+    '@class': 'org.apache.streampipes.model.connect.rules.value.RegexTransformationRuleDescription';
+    'regex': string;
+    'replaceAll': boolean;
+    'replaceWith': string;
+    'runtimeKey': string;
+
+    static 'fromData'(
+        data: RegexTransformationRuleDescription,
+        target?: RegexTransformationRuleDescription,
+    ): RegexTransformationRuleDescription {
+        if (!data) {
+            return data;
+        }
+        const instance = target || new RegexTransformationRuleDescription();
+        super.fromData(data, instance);
+        instance.regex = data.regex;
+        instance.replaceAll = data.replaceAll;
+        instance.replaceWith = data.replaceWith;
+        instance.runtimeKey = data.runtimeKey;
+        return instance;
+    }
+}
+
 export class RemoveDuplicatesTransformationRuleDescription extends StreamTransformationRuleDescription {
     '@class': 'org.apache.streampipes.model.connect.rules.stream.RemoveDuplicatesTransformationRuleDescription';
     'filterTimeWindow': string;
@@ -3114,6 +3255,24 @@ export class RenameRuleDescription extends SchemaTransformationRuleDescription {
         super.fromData(data, instance);
         instance.newRuntimeKey = data.newRuntimeKey;
         instance.oldRuntimeKey = data.oldRuntimeKey;
+        return instance;
+    }
+}
+
+export class ResourceMetadata {
+    createdAtEpochMs: number;
+    lastModifiedEpochMs: number;
+
+    static fromData(
+        data: ResourceMetadata,
+        target?: ResourceMetadata,
+    ): ResourceMetadata {
+        if (!data) {
+            return data;
+        }
+        const instance = target || new ResourceMetadata();
+        instance.createdAtEpochMs = data.createdAtEpochMs;
+        instance.lastModifiedEpochMs = data.lastModifiedEpochMs;
         return instance;
     }
 }
@@ -3537,6 +3696,10 @@ export class SpQueryResult {
     }
 }
 
+export interface SpResource {
+    metadata: ResourceMetadata;
+}
+
 export class SpServiceConfiguration implements Storable {
     configs: ConfigItem[];
     elementId: string;
@@ -3679,6 +3842,7 @@ export class StreamPipesApplicationPackage {
     dataViewWidgets: string[];
     dataViews: string[];
     files: string[];
+    genericStorageDocuments: string[];
     pipelines: string[];
     requiredAdapterAppIds: string[];
     requiredDataSinkAppIds: string[];
@@ -3715,6 +3879,9 @@ export class StreamPipesApplicationPackage {
             data.dataViews,
         );
         instance.files = __getCopyArrayFn(__identity<string>())(data.files);
+        instance.genericStorageDocuments = __getCopyArrayFn(
+            __identity<string>(),
+        )(data.genericStorageDocuments);
         instance.pipelines = __getCopyArrayFn(__identity<string>())(
             data.pipelines,
         );
@@ -3812,6 +3979,26 @@ export class TransformOutputStrategy extends OutputStrategy {
     }
 }
 
+export class TransformationConfig {
+    measurementUnit: { [index: string]: string };
+    rename: { [index: string]: string };
+
+    static fromData(
+        data: TransformationConfig,
+        target?: TransformationConfig,
+    ): TransformationConfig {
+        if (!data) {
+            return data;
+        }
+        const instance = target || new TransformationConfig();
+        instance.measurementUnit = __getCopyObjectFn(__identity<string>())(
+            data.measurementUnit,
+        );
+        instance.rename = __getCopyObjectFn(__identity<string>())(data.rename);
+        return instance;
+    }
+}
+
 export class TreeInputNode {
     children: TreeInputNode[];
     dataNode: boolean;
@@ -3864,6 +4051,26 @@ export class UnitTransformRuleDescription extends ValueTransformationRuleDescrip
     }
 }
 
+export class UserDefinedOutput {
+    fieldName: string;
+    runtimeType: string;
+    semanticType: string;
+
+    static fromData(
+        data: UserDefinedOutput,
+        target?: UserDefinedOutput,
+    ): UserDefinedOutput {
+        if (!data) {
+            return data;
+        }
+        const instance = target || new UserDefinedOutput();
+        instance.fieldName = data.fieldName;
+        instance.runtimeType = data.runtimeType;
+        instance.semanticType = data.semanticType;
+        return instance;
+    }
+}
+
 export class UserDefinedOutputStrategy extends OutputStrategy {
     '@class': 'org.apache.streampipes.model.output.UserDefinedOutputStrategy';
     'eventProperties': EventPropertyUnion[];
@@ -3901,30 +4108,6 @@ export class UserInfo {
         instance.roles = __getCopyArrayFn(__identity<string>())(data.roles);
         instance.showTutorial = data.showTutorial;
         instance.username = data.username;
-        return instance;
-    }
-}
-
-export class VisualizablePipeline {
-    pipelineId: string;
-    pipelineName: string;
-    schema: EventSchema;
-    topic: string;
-    visualizationName: string;
-
-    static fromData(
-        data: VisualizablePipeline,
-        target?: VisualizablePipeline,
-    ): VisualizablePipeline {
-        if (!data) {
-            return data;
-        }
-        const instance = target || new VisualizablePipeline();
-        instance.pipelineId = data.pipelineId;
-        instance.pipelineName = data.pipelineName;
-        instance.schema = EventSchema.fromData(data.schema);
-        instance.topic = data.topic;
-        instance.visualizationName = data.visualizationName;
         return instance;
     }
 }
@@ -4098,6 +4281,7 @@ export type TransformationRuleDescriptionUnion =
     | CreateNestedRuleDescription
     | DeleteRuleDescription
     | RenameRuleDescription
+    | RegexTransformationRuleDescription
     | MoveRuleDescription
     | ChangeDatatypeTransformationRuleDescription
     | CorrectionValueTransformationRuleDescription;
@@ -4118,7 +4302,8 @@ export type ValueTransformationRuleDescriptionUnion =
     | AddValueTransformationRuleDescription
     | TimestampTranfsformationRuleDescription
     | UnitTransformRuleDescription
-    | CorrectionValueTransformationRuleDescription;
+    | CorrectionValueTransformationRuleDescription
+    | RegexTransformationRuleDescription;
 
 function __getCopyArrayFn<T>(itemCopyFn: (item: T) => T): (array: T[]) => T[] {
     return (array: T[]) => __copyArray(array, itemCopyFn);

@@ -21,7 +21,7 @@
     <parent>
         <artifactId>streampipes-extensions</artifactId>
         <groupId>org.apache.streampipes</groupId>
-        <version>0.97.0-SNAPSHOT</version>
+        <version>0.98.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -32,12 +32,12 @@
         <dependency>
             <groupId>org.apache.streampipes</groupId>
             <artifactId>streampipes-extensions-management</artifactId>
-            <version>0.97.0-SNAPSHOT</version>
+            <version>0.98.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.streampipes</groupId>
             <artifactId>streampipes-wrapper-standalone</artifactId>
-            <version>0.97.0-SNAPSHOT</version>
+            <version>0.98.0-SNAPSHOT</version>
         </dependency>
 
         <!-- External dependencies -->
@@ -94,6 +94,35 @@
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-runtime</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.milvus</groupId>
+            <artifactId>milvus-sdk-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.errorprone</groupId>
+            <artifactId>error_prone_annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-context</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tsfile</groupId>
+            <artifactId>tsfile</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.tukaani</groupId>
+            <artifactId>xz</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-runtime</artifactId>
+        </dependency>
+
 
 
         <!-- Test dependencies -->
@@ -106,6 +135,14 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
         </dependency>
     </dependencies>
 

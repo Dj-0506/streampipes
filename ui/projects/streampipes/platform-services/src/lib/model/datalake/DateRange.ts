@@ -21,7 +21,60 @@ export interface TimeSettings {
     endTime: number;
     // deprecated
     dynamicSelection?: 15 | 60 | 1440 | 10080 | 43800 | 525600 | -1;
-    timeSelectionId?: TimeSelectionId;
+    timeSelectionId?: string;
+}
+
+export interface ExtendedTimeSettings {
+    timeSettings: TimeSettings;
+    supportsLiveRefresh: boolean;
+}
+
+export class TimeSelectionConstants {
+    static CUSTOM = 'custom';
+    static LAST_15_MINUTES = 'last-15-minutes';
+    static LAST_HOUR = 'last-hour';
+    static CURRENT_HOUR = 'current-hour';
+    static LAST_DAY = 'last-day';
+    static CURRENT_DAY = 'current-day';
+    static LAST_WEEK = 'last-week';
+    static CURRENT_WEEK = 'current-week';
+    static LAST_MONTH = 'last-month';
+    static CURRENT_MONTH = 'current-month';
+    static LAST_YEAR = 'last-year';
+    static CURRENT_YEAR = 'current-year';
+
+    static getLegacyTimeSelectionID(legacyID: number) {
+        if (legacyID === 0) {
+            return TimeSelectionConstants.CUSTOM;
+        } else if (legacyID === 1) {
+            return TimeSelectionConstants.LAST_15_MINUTES;
+        } else if (legacyID === 2) {
+            return TimeSelectionConstants.LAST_HOUR;
+        } else if (legacyID === 3) {
+            return TimeSelectionConstants.CURRENT_HOUR;
+        } else if (legacyID === 4) {
+            return TimeSelectionConstants.LAST_DAY;
+        } else if (legacyID === 5) {
+            return TimeSelectionConstants.CURRENT_DAY;
+        } else if (legacyID === 6) {
+            return TimeSelectionConstants.LAST_WEEK;
+        } else if (legacyID === 7) {
+            return TimeSelectionConstants.CURRENT_WEEK;
+        } else if (legacyID === 8) {
+            return TimeSelectionConstants.LAST_MONTH;
+        } else if (legacyID === 9) {
+            return TimeSelectionConstants.CURRENT_MONTH;
+        } else if (legacyID === 10) {
+            return TimeSelectionConstants.LAST_YEAR;
+        } else if (legacyID === 11) {
+            return TimeSelectionConstants.CURRENT_YEAR;
+        }
+    }
+}
+
+export interface WidgetTimeSettings {
+    timeSettings: TimeSettings;
+    widgetIndex?: number;
 }
 
 export interface TimeString {
@@ -29,6 +82,7 @@ export interface TimeString {
     startTime: string;
     endDate: string;
     endTime: string;
+    sameDay: boolean;
 }
 
 export enum TimeSelectionId {
@@ -48,10 +102,11 @@ export enum TimeSelectionId {
 
 export interface QuickTimeSelection {
     label: string;
-    timeSelectionId: TimeSelectionId;
+    timeSelectionId: string;
     startTime: (now: Date) => Date;
     endTime: (now: Date) => Date;
     addDividerAfter?: boolean;
+    supportsLiveRefresh?: boolean;
 }
 
 export class DateRange {

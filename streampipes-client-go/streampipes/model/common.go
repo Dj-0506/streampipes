@@ -29,7 +29,7 @@ type EventProperty struct {
 	Label              string             `json:"label,omitempty"`
 	Description        string             `json:"description,omitempty"`
 	RuntimeName        string             `json:"runtimeName,omitempty"`
-	DomainProperties   []string           `json:"domainProperties,omitempty"`
+	SemanticType       string             `json:"semanticType,omitempty"`
 	PropertyScope      string             `json:"propertyScope,omitempty"`
 	RuntimeID          string             `json:"runtimeId,omitempty"`
 	RuntimeType        string             `json:"runtimeType"`
@@ -42,7 +42,7 @@ type EventProperties struct {
 	Label              string            `json:"label"`
 	Description        string            `json:"description"`
 	RuntimeName        string            `json:"runtimeName"`
-	DomainProperties   []string          `json:"domainProperties"`
+	SemanticType       string            `json:"semanticType"`
 	PropertyScope      string            `json:"propertyScope"`
 	RuntimeID          string            `json:"runtimeId"`
 	RuntimeType        string            `json:"runtimeType,omitempty"`
@@ -84,6 +84,51 @@ type StaticProperty struct {
 	InternalName       string `json:"internalName"`
 	Predefined         bool   `json:"predefined"`
 	Class              string `json:"@class"`
+}
+
+type MappingProperty struct {
+	StaticProperty
+	RequirementSelector string
+	MapsFromOptions     []string
+	PropertyScope       string
+}
+
+type MappingPropertyUnary struct {
+	MappingProperty
+	SelectedProperty string
+}
+
+type FreeTextStaticProperty struct {
+	StaticProperty
+	value                 string
+	MapsTo                string
+	MultiLine             bool
+	HtmlAllowed           bool
+	HtmlFontFormat        bool
+	PlaceholdersSupported bool
+}
+
+type SelectionStaticProperty struct {
+	HorizontalRendering bool
+}
+
+type OneOfStaticProperty struct {
+	SelectionStaticProperty
+}
+
+type AnyStaticProperty struct {
+	SelectionStaticProperty
+}
+
+type RuntimeResolvableAnyStaticProperty struct {
+	AnyStaticProperty
+	DependsOn []string
+}
+
+type SlideToggleStaticProperty struct {
+	StaticProperty
+	Selected     bool
+	DefaultValue bool
 }
 
 type SpDataStream struct {

@@ -20,22 +20,22 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { DataLakeConfigurationEntry } from './datalake-configuration-entry';
 import {
+    ChartService,
     DatalakeRestService,
-    DataViewDataExplorerService,
 } from '@streampipes/platform-services';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import {
+    DataDownloadDialogComponent,
     DialogRef,
     DialogService,
     PanelType,
     SpBreadcrumbService,
+    SpNavigationItem,
 } from '@streampipes/shared-ui';
 import { DeleteDatalakeIndexComponent } from '../dialog/delete-datalake-index/delete-datalake-index-dialog.component';
-import { SpConfigurationTabs } from '../configuration-tabs';
+import { SpConfigurationTabsService } from '../configuration-tabs.service';
 import { SpConfigurationRoutes } from '../configuration.routes';
-import { DataDownloadDialogComponent } from '../../core-ui/data-download-dialog/data-download-dialog.component';
-import { HttpClient } from '@angular/common/http';
 
 @Component({
     selector: 'sp-datalake-configuration',
@@ -43,12 +43,13 @@ import { HttpClient } from '@angular/common/http';
     styleUrls: ['./datalake-configuration.component.scss'],
 })
 export class DatalakeConfigurationComponent implements OnInit {
-    tabs = SpConfigurationTabs.getTabs();
+    tabs: SpNavigationItem[] = [];
 
     @ViewChild(MatPaginator) paginator: MatPaginator;
     @ViewChild(MatSort) sort: MatSort;
 
-    dataSource: MatTableDataSource<DataLakeConfigurationEntry>;
+    dataSource: MatTableDataSource<DataLakeConfigurationEntry> =
+        new MatTableDataSource([]);
     availableMeasurements: DataLakeConfigurationEntry[] = [];
 
     displayedColumns: string[] = [
@@ -61,19 +62,21 @@ export class DatalakeConfigurationComponent implements OnInit {
     ];
 
     pageSize = 15;
+    pageIndex = 0;
 
     constructor(
-        private http: HttpClient,
         private datalakeRestService: DatalakeRestService,
-        private dataViewDataExplorerService: DataViewDataExplorerService,
+        private dataViewDataExplorerService: ChartService,
         private dialogService: DialogService,
         private breadcrumbService: SpBreadcrumbService,
+        private tabService: SpConfigurationTabsService,
     ) {}
 
     ngOnInit(): void {
+        this.tabs = this.tabService.getTabs();
         this.breadcrumbService.updateBreadcrumb([
             SpConfigurationRoutes.BASE,
-            { label: SpConfigurationTabs.getTabs()[1].itemTitle },
+            { label: this.tabService.getTabTitle('datalake') },
         ]);
         this.loadAvailableMeasurements();
     }
@@ -111,10 +114,8 @@ export class DatalakeConfigurationComponent implements OnInit {
                         this.availableMeasurements.sort((a, b) =>
                             a.name.localeCompare(b.name),
                         );
-                        this.receiveMeasurementSizes(0);
-                        this.dataSource = new MatTableDataSource(
-                            this.availableMeasurements,
-                        );
+                        this.receiveMeasurementSizes(this.pageIndex);
+                        this.dataSource.data = this.availableMeasurements;
                         setTimeout(() => {
                             this.dataSource.paginator = this.paginator;
                             this.dataSource.sort = this.sort;
@@ -175,7 +176,8 @@ export class DatalakeConfigurationComponent implements OnInit {
     }
 
     onPageChange(event: any) {
-        this.receiveMeasurementSizes(event.pageIndex);
+        this.pageIndex = event.pageIndex;
+        this.receiveMeasurementSizes(this.pageIndex);
     }
 
     receiveMeasurementSizes(pageIndex: number) {
@@ -185,14 +187,16 @@ export class DatalakeConfigurationComponent implements OnInit {
             .slice(start, end)
             .filter(m => m.events === -1)
             .map(m => m.name);
-        this.datalakeRestService
-            .getMeasurementEntryCounts(measurements)
-            .subscribe(res => {
-                this.availableMeasurements.forEach(m => {
-                    if (res[m.name] !== undefined) {
-                        m.events = res[m.name];
-                    }
+        if (measurements.length > 0) {
+            this.datalakeRestService
+                .getMeasurementEntryCounts(measurements)
+                .subscribe(res => {
+                    this.availableMeasurements.forEach(m => {
+                        if (res[m.name] !== undefined) {
+                            m.events = res[m.name];
+                        }
+                    });
                 });
-            });
+        }
     }
 }

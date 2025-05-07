@@ -23,12 +23,15 @@ import {
     OnDestroy,
     OnInit,
     Output,
+    inject,
 } from '@angular/core';
 import { SpAssetBrowserService } from './asset-browser.service';
 import { AssetBrowserData } from './asset-browser.model';
 import { Subscription } from 'rxjs';
 import { SpAsset } from '@streampipes/platform-services';
 import { Router } from '@angular/router';
+import { CurrentUserService } from '../../services/current-user.service';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
     selector: 'sp-asset-browser',
@@ -36,11 +39,13 @@ import { Router } from '@angular/router';
     styleUrls: ['./asset-browser.component.scss'],
 })
 export class AssetBrowserComponent implements OnInit, OnDestroy {
+    translateService = inject(TranslateService);
+
     @Input()
     showResources = false;
 
     @Input()
-    allResourcesAlias = 'Resources';
+    allResourcesAlias = this.translateService.instant('Resources');
 
     @Input()
     browserWidth = 20;
@@ -68,20 +73,28 @@ export class AssetBrowserComponent implements OnInit, OnDestroy {
     expandedSub: Subscription;
 
     expanded = true;
+    showAssetBrowser = false;
 
     constructor(
         private assetBrowserService: SpAssetBrowserService,
         private router: Router,
+        private currentUserService: CurrentUserService,
     ) {}
 
     ngOnInit(): void {
-        this.assetBrowserDataSub =
-            this.assetBrowserService.assetData$.subscribe(assetData => {
-                this.assetBrowserData = assetData;
-            });
-        this.expandedSub = this.assetBrowserService.expanded$.subscribe(
-            expanded => (this.expanded = expanded),
-        );
+        this.showAssetBrowser = this.currentUserService.hasAnyRole([
+            'PRIVILEGE_READ_ASSETS',
+            'PRIVILEGE_WRITE_ASSETS',
+        ]);
+        if (this.showAssetBrowser) {
+            this.assetBrowserDataSub =
+                this.assetBrowserService.assetData$.subscribe(assetData => {
+                    this.assetBrowserData = assetData;
+                });
+            this.expandedSub = this.assetBrowserService.expanded$.subscribe(
+                expanded => (this.expanded = expanded),
+            );
+        }
     }
 
     toggleExpanded(event: boolean): void {

@@ -31,12 +31,12 @@ import org.apache.streampipes.extensions.api.connect.context.IAdapterRuntimeCont
 import org.apache.streampipes.extensions.api.extractor.IAdapterParameterExtractor;
 import org.apache.streampipes.extensions.api.extractor.IStaticPropertyExtractor;
 import org.apache.streampipes.extensions.api.runtime.SupportsRuntimeConfig;
-import org.apache.streampipes.extensions.connectors.kafka.shared.kafka.KafkaConfig;
-import org.apache.streampipes.extensions.connectors.kafka.shared.kafka.KafkaConnectUtils;
+import org.apache.streampipes.extensions.connectors.kafka.shared.kafka.KafkaBaseConfig;
+import org.apache.streampipes.extensions.connectors.kafka.shared.kafka.KafkaConfigExtractor;
+import org.apache.streampipes.extensions.connectors.kafka.shared.kafka.KafkaConfigProvider;
 import org.apache.streampipes.extensions.management.connect.adapter.BrokerEventProcessor;
 import org.apache.streampipes.extensions.management.connect.adapter.parser.Parsers;
 import org.apache.streampipes.messaging.kafka.SpKafkaConsumer;
-import org.apache.streampipes.messaging.kafka.config.KafkaConfigAppender;
 import org.apache.streampipes.model.AdapterType;
 import org.apache.streampipes.model.connect.guess.GuessSchema;
 import org.apache.streampipes.model.extensions.ExtensionAssetType;
@@ -47,57 +47,50 @@ import org.apache.streampipes.model.staticproperty.RuntimeResolvableOneOfStaticP
 import org.apache.streampipes.model.staticproperty.StaticProperty;
 import org.apache.streampipes.model.staticproperty.StaticPropertyAlternative;
 import org.apache.streampipes.sdk.builder.adapter.AdapterConfigurationBuilder;
+import org.apache.streampipes.sdk.helpers.Labels;
 import org.apache.streampipes.sdk.helpers.Locales;
 
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.KafkaException;
-import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class KafkaProtocol implements StreamPipesAdapter, SupportsRuntimeConfig {
 
-  private static final Logger logger = LoggerFactory.getLogger(KafkaProtocol.class);
-  KafkaConfig config;
+  private static final Logger LOG = LoggerFactory.getLogger(KafkaProtocol.class);
+  private KafkaBaseConfig config;
 
   public static final String ID = "org.apache.streampipes.connect.iiot.protocol.stream.kafka";
 
-  private Thread thread;
   private SpKafkaConsumer kafkaConsumer;
 
   public KafkaProtocol() {
   }
 
   private void applyConfiguration(IStaticPropertyExtractor extractor) {
-    this.config = KafkaConnectUtils.getConfig(extractor, true);
+    this.config = new KafkaConfigExtractor().extractAdapterConfig(extractor, true);
   }
 
-  private Consumer<byte[], byte[]> createConsumer(KafkaConfig kafkaConfig) throws KafkaException {
+  private Consumer<byte[], byte[]> createConsumer(KafkaBaseConfig kafkaConfig) throws KafkaException {
     final Properties props = new Properties();
 
-    kafkaConfig.getSecurityConfig().appendConfig(props);
-    kafkaConfig.getAutoOffsetResetConfig().appendConfig(props);
+    kafkaConfig.getConfigAppenders().forEach(c -> c.appendConfig(props));
 
     props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
         kafkaConfig.getKafkaHost() + ":" + kafkaConfig.getKafkaPort());
-
-    props.put(ConsumerConfig.GROUP_ID_CONFIG,
-        "KafkaExampleConsumer" + System.currentTimeMillis());
 
     props.put(ConsumerConfig.DEFAULT_API_TIMEOUT_MS_CONFIG, 6000);
 
@@ -114,61 +107,71 @@ public class KafkaProtocol implements StreamPipesAdapter, SupportsRuntimeConfig 
                                              IStaticPropertyExtractor extractor)
       throws SpConfigurationException {
     RuntimeResolvableOneOfStaticProperty config = extractor
-        .getStaticPropertyByName(KafkaConnectUtils.TOPIC_KEY, RuntimeResolvableOneOfStaticProperty.class);
-    KafkaConfig kafkaConfig = KafkaConnectUtils.getConfig(extractor, false);
-    boolean hideInternalTopics = extractor.slideToggleValue(KafkaConnectUtils.getHideInternalTopicsKey());
+        .getStaticPropertyByName(KafkaConfigProvider.TOPIC_KEY, RuntimeResolvableOneOfStaticProperty.class);
+    var kafkaConfig = new KafkaConfigExtractor().extractAdapterConfig(extractor, false);
+    boolean hideInternalTopics = extractor.slideToggleValue(KafkaConfigProvider.getHideInternalTopicsKey());
 
     try {
-      Consumer<byte[], byte[]> consumer = createConsumer(kafkaConfig);
-      Set<String> topics = consumer.listTopics().keySet();
+      var consumer = createConsumer(kafkaConfig);
+      List<String> topics = new ArrayList<>(consumer.listTopics().keySet()).stream().sorted().toList();
       consumer.close();
 
       if (hideInternalTopics) {
         topics = topics
             .stream()
-            .filter(t -> !t.startsWith(GlobalStreamPipesConstants.INTERNAL_TOPIC_PREFIX))
-            .collect(Collectors.toSet());
+            .filter(t -> (!t.startsWith(GlobalStreamPipesConstants.INTERNAL_TOPIC_PREFIX)
+                && !t.startsWith(GlobalStreamPipesConstants.CONNECT_TOPIC_PREFIX)))
+            .toList();
       }
 
       config.setOptions(topics.stream().map(Option::new).collect(Collectors.toList()));
 
       return config;
-    } catch (KafkaException e) {
-      throw new SpConfigurationException(e.getMessage(), e);
+    } catch (Exception e) {
+      var message = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
+      throw new SpConfigurationException(message, e.getCause());
     }
   }
 
   @Override
   public IAdapterConfiguration declareConfig() {
 
-    StaticPropertyAlternative latestAlternative = KafkaConnectUtils.getAlternativesLatest();
+    StaticPropertyAlternative latestAlternative = KafkaConfigProvider.getAlternativesLatest();
     latestAlternative.setSelected(true);
 
     return AdapterConfigurationBuilder
-        .create(ID, 0, KafkaProtocol::new)
+        .create(ID, 2, KafkaProtocol::new)
         .withSupportedParsers(Parsers.defaultParsers())
         .withAssets(ExtensionAssetType.DOCUMENTATION, ExtensionAssetType.ICON)
         .withLocales(Locales.EN)
         .withCategory(AdapterType.Generic, AdapterType.Manufacturing)
 
-        .requiredAlternatives(KafkaConnectUtils.getAccessModeLabel(),
-            KafkaConnectUtils.getAlternativeUnauthenticatedPlain(),
-            KafkaConnectUtils.getAlternativeUnauthenticatedSSL(),
-            KafkaConnectUtils.getAlternativesSaslPlain(),
-            KafkaConnectUtils.getAlternativesSaslSSL())
+        .requiredAlternatives(KafkaConfigProvider.getAccessModeLabel(),
+            KafkaConfigProvider.getAlternativeUnauthenticatedPlain(),
+            KafkaConfigProvider.getAlternativeUnauthenticatedSSL(),
+            KafkaConfigProvider.getAlternativesSaslPlain(),
+            KafkaConfigProvider.getAlternativesSaslSSL())
 
-        .requiredTextParameter(KafkaConnectUtils.getHostLabel())
-        .requiredIntegerParameter(KafkaConnectUtils.getPortLabel())
+        .requiredTextParameter(KafkaConfigProvider.getHostLabel())
+        .requiredIntegerParameter(KafkaConfigProvider.getPortLabel())
 
-        .requiredSlideToggle(KafkaConnectUtils.getHideInternalTopicsLabel(), true)
+        .requiredAlternatives(KafkaConfigProvider.getConsumerGroupLabel(),
+            KafkaConfigProvider.getAlternativesRandomGroupId(),
+            KafkaConfigProvider.getAlternativesGroupId())
 
-        .requiredSingleValueSelectionFromContainer(KafkaConnectUtils.getTopicLabel(), Arrays.asList(
-            KafkaConnectUtils.HOST_KEY,
-            KafkaConnectUtils.PORT_KEY))
-        .requiredAlternatives(KafkaConnectUtils.getAutoOffsetResetConfigLabel(),
-                KafkaConnectUtils.getAlternativesEarliest(),
-                latestAlternative,
-                KafkaConnectUtils.getAlternativesNone())
+        .requiredSlideToggle(KafkaConfigProvider.getHideInternalTopicsLabel(), true)
+
+        .requiredSingleValueSelectionFromContainer(KafkaConfigProvider.getTopicLabel(), Arrays.asList(
+            KafkaConfigProvider.HOST_KEY,
+            KafkaConfigProvider.PORT_KEY))
+        .requiredAlternatives(KafkaConfigProvider.getAutoOffsetResetConfigLabel(),
+            KafkaConfigProvider.getAlternativesEarliest(),
+            latestAlternative,
+            KafkaConfigProvider.getAlternativesNone())
+        .requiredCodeblock(
+            Labels.withId(KafkaConfigProvider.ADDITIONAL_PROPERTIES),
+            "# key=value, comments are ignored"
+        )
         .buildConfiguration();
   }
 
@@ -182,20 +185,10 @@ public class KafkaProtocol implements StreamPipesAdapter, SupportsRuntimeConfig 
     protocol.setBrokerHostname(config.getKafkaHost());
     protocol.setTopicDefinition(new SimpleTopicDefinition(config.getTopic()));
 
-    List<KafkaConfigAppender> kafkaConfigAppenderList = new ArrayList<>(2);
-    kafkaConfigAppenderList.add(this.config.getSecurityConfig());
-    kafkaConfigAppenderList.add(this.config.getAutoOffsetResetConfig());
-
     this.kafkaConsumer = new SpKafkaConsumer(protocol,
-        config.getTopic(),
-        new BrokerEventProcessor(extractor.selectedParser(), (event) -> {
-          collector.collect(event);
-        }),
-        kafkaConfigAppenderList
-        );
-
-    thread = new Thread(this.kafkaConsumer);
-    thread.start();
+        config.getConfigAppenders()
+    );
+    this.kafkaConsumer.connect(new BrokerEventProcessor(extractor.selectedParser(), collector));
   }
 
   @Override
@@ -204,17 +197,16 @@ public class KafkaProtocol implements StreamPipesAdapter, SupportsRuntimeConfig 
     try {
       kafkaConsumer.disconnect();
     } catch (SpRuntimeException e) {
-      e.printStackTrace();
+      LOG.warn("Runtime exception when disconnecting from Kafka", e);
     }
 
     try {
       Thread.sleep(5000);
     } catch (InterruptedException e) {
-      e.printStackTrace();
+      LOG.warn("Interrupted exception when stopping thread", e);
     }
 
-    logger.info("Kafka Adapter was sucessfully stopped");
-    thread.interrupt();
+    LOG.info("Kafka Adapter was sucessfully stopped");
   }
 
   @Override
@@ -222,45 +214,41 @@ public class KafkaProtocol implements StreamPipesAdapter, SupportsRuntimeConfig 
                                        IAdapterGuessSchemaContext adapterGuessSchemaContext) throws AdapterException {
 
     this.applyConfiguration(extractor.getStaticPropertyExtractor());
-    final Consumer<byte[], byte[]> consumer;
-
-    consumer = createConsumer(this.config);
-    consumer.subscribe(Collections.singletonList(config.getTopic()), new ConsumerRebalanceListener() {
-      @Override
-      public void onPartitionsRevoked(Collection<TopicPartition> collection) {
-
-      }
-
-      @Override
-      public void onPartitionsAssigned(Collection<TopicPartition> collection) {
-        consumer.seekToBeginning(collection);
-      }
-    });
-
     List<byte[]> nEventsByte = new ArrayList<>();
     List<byte[]> resultEventsByte;
-    int n = 1;
 
+    try (Consumer<byte[], byte[]> consumer = createConsumer(this.config)) {
+      LOG.debug("Created consumer for topic {}", config.getTopic());
 
-    while (true) {
-      final ConsumerRecords<byte[], byte[]> consumerRecords =
-          consumer.poll(1000);
+      consumer.subscribe(Collections.singletonList(config.getTopic()));
 
-      consumerRecords.forEach(record -> nEventsByte.add(record.value()));
+      long startTime = System.currentTimeMillis();
+      long timeoutMillis = 15000;
+      int requiredEvents = 1;
 
-      if (nEventsByte.size() > n) {
-        resultEventsByte = nEventsByte.subList(0, n);
-        break;
-      } else if (nEventsByte.size() == n) {
-        resultEventsByte = nEventsByte;
-        break;
+      while (System.currentTimeMillis() - startTime < timeoutMillis) {
+        ConsumerRecords<byte[], byte[]> consumerRecords = consumer.poll(Duration.ofMillis(1000));
+        LOG.debug("Polled {} records from topic {}", consumerRecords.count(), config.getTopic());
+
+        consumerRecords.forEach(record -> {
+          if (record.value() != null) {
+            nEventsByte.add(record.value());
+          }
+        });
+
+        if (nEventsByte.size() >= requiredEvents) {
+          resultEventsByte = nEventsByte.subList(0, requiredEvents);
+          LOG.info("Retrieved {} events from topic {}", resultEventsByte.size(), config.getTopic());
+          return extractor.selectedParser().getGuessSchema(new ByteArrayInputStream(resultEventsByte.get(0)));
+        }
       }
 
-      consumer.commitAsync();
+      throw new AdapterException("Timeout reached (15 seconds). No events received from topic " + config.getTopic());
+
+    } catch (Exception e) {
+      throw new AdapterException("Error while guessing schema: " + e.getMessage(), e);
+    } finally {
+      LOG.debug("Closed consumer for topic {}", config.getTopic());
     }
-
-    consumer.close();
-
-    return extractor.selectedParser().getGuessSchema(new ByteArrayInputStream(resultEventsByte.get(0)));
   }
 }

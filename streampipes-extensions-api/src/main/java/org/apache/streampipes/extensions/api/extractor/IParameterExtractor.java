@@ -60,16 +60,10 @@ public interface IParameterExtractor {
 
   <V> List<V> selectedMultiValues(String internalName, Class<V> targetClass);
 
+  <V> List<V> selectedMultiValuesInternalNames(String internalName, Class<V> targetClass);
+
   <V> List<V> selectedTreeNodesInternalNames(String internalName,
                                              Class<V> targetClass);
-
-  /**
-   * @deprecated use {@link #selectedTreeNodesInternalNames(String, Class)} instead
-   */
-  @Deprecated(since = "0.97.0", forRemoval = true)
-  <V> List<V> selectedTreeNodesInternalNames(String internalName,
-                                             Class<V> targetClass,
-                                             boolean onlyDataNodes);
 
   <W extends StaticProperty> W getStaticPropertyByName(String internalName, Class<W>
       spType);
@@ -102,4 +96,6 @@ public interface IParameterExtractor {
   List<String> getEventPropertiesSelectorByScope(PropertyScope scope);
 
   List<EventProperty> getEventPropertiesByScope(PropertyScope scope);
+
+  List<EventProperty> getInputEventProperties(int streamIndex);
 }

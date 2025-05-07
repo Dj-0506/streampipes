@@ -31,6 +31,11 @@ export class DataLakeUtils {
         cy.visit('#/dataexplorer');
     }
 
+    public static goToDashboard() {
+        cy.wait(1000);
+        cy.visit('#/dashboard');
+    }
+
     public static initDataLakeTests() {
         cy.initStreamPipesTest();
         DataLakeUtils.loadRandomDataSetIntoDataLake();
@@ -69,7 +74,6 @@ export class DataLakeUtils {
 
     public static loadDataIntoDataLake(
         dataSet: string,
-        wait = true,
         format: 'csv' | 'json_array' = 'csv',
     ) {
         // Create adapter with dataset
@@ -91,7 +95,7 @@ export class DataLakeUtils {
         widgetType: string,
     ) {
         DataLakeUtils.goToDatalake();
-        DataLakeUtils.createAndEditDataView(dataViewName);
+        DataLakeUtils.createAndEditDataView();
 
         DataLakeUtils.selectTimeRange(
             new Date(2020, 10, 20, 22, 44),
@@ -162,7 +166,7 @@ export class DataLakeUtils {
 
     public static createAndEditDataView() {
         // Create new data view
-        cy.dataCy('open-new-data-view').click();
+        cy.dataCy('open-new-data-view', { timeout: 10000 }).click();
     }
 
     public static removeWidget(dataViewName: string) {
@@ -182,7 +186,9 @@ export class DataLakeUtils {
     }
 
     public static saveDataViewConfiguration() {
-        cy.dataCy('save-data-view-btn', { timeout: 10000 }).click();
+        cy.dataCy('save-data-view-btn', { timeout: 10000 }).click({
+            force: true,
+        });
     }
 
     public static saveDashboardConfiguration() {
@@ -280,6 +286,43 @@ export class DataLakeUtils {
     }
 
     /**
+     * This method validates that the defined filter options are available in the UI
+     * @param expectedFilterOptions
+     */
+    public static validateFilterOptions(
+        expectedFilterOptions: ('=' | '<' | '<=' | '>=' | '>' | '!=')[],
+    ) {
+        cy.dataCy('design-panel-data-settings-filter-operator')
+            .click()
+            .dataCy('operator-', {}, true)
+            .should('have.length', expectedFilterOptions.length);
+
+        expectedFilterOptions.forEach(option => {
+            const escapedOption = option.replace(/([=<>!])/g, '\\$1');
+            cy.dataCy('operator-' + escapedOption).should('be.visible');
+        });
+
+        cy.dataCy('design-panel-data-settings-filter-operator').click({
+            force: true,
+        });
+    }
+
+    public static validateAutoCompleteOptions(options: string[]) {
+        cy.dataCy('design-panel-data-settings-filter-value')
+            .click({ force: true })
+            .dataCy('autocomplete-value-', {}, true)
+            .should('have.length', options.length);
+
+        options.forEach(option => {
+            cy.dataCy('autocomplete-value-' + option).should('be.visible');
+        });
+
+        cy.dataCy('design-panel-data-settings-filter-value').click({
+            force: true,
+        });
+    }
+
+    /**
      * In the data set panel select all property fields
      */
     public static dataConfigSelectAllFields() {
@@ -310,7 +353,9 @@ export class DataLakeUtils {
     }
 
     public static dataConfigRemoveFilter() {
-        cy.dataCy('design-panel-data-settings-remove-filter').first().click();
+        cy.dataCy('design-panel-data-settings-remove-filter')
+            .first()
+            .click({ force: true });
     }
 
     public static clickGroupBy(propertyName: string) {
@@ -330,12 +375,11 @@ export class DataLakeUtils {
     /**
      * Select visualization type
      */
-    public static selectVisualizationType(type: string | 'Table') {
+    public static selectVisualizationType(type: string | 'table') {
         // Select visualization type
         cy.dataCy('data-explorer-select-visualization-type', { timeout: 10000 })
             .click()
-            .get('mat-option')
-            .contains(type)
+            .dataCy(`select-widget-${type}`)
             .click();
     }
 
@@ -368,29 +412,65 @@ export class DataLakeUtils {
     }
 
     public static checkResults(
-        dataLakeIndex: string,
+        measurementName: string,
         fileRoute: string,
+        ignoreTime: boolean,
+    ) {
+        const fileType = this.getFileType(fileRoute);
+
+        this.fetchDataLakeResults(measurementName, fileType).then(
+            actualResultString =>
+                this.compareResults(
+                    actualResultString,
+                    fileRoute,
+                    fileType,
+                    ignoreTime,
+                ),
+        );
+    }
+
+    private static getFileType(fileRoute: string): 'csv' | 'json' {
+        return fileRoute.endsWith('.csv') ? 'csv' : 'json';
+    }
+
+    private static fetchDataLakeResults(
+        measurementName: string,
+        fileType: 'csv' | 'json',
+    ): Cypress.Chainable<string> {
+        return cy
+            .request({
+                method: 'GET',
+                url: `/streampipes-backend/api/v4/datalake/measurements/${measurementName}/download?format=${fileType}&delimiter=semicolon`,
+                headers: {
+                    'content-type': 'application/octet-stream',
+                },
+                auth: {
+                    bearer: window.localStorage.getItem('auth-token'),
+                },
+            })
+            .then(response => response.body);
+    }
+
+    private static compareResults(
+        actualResultString: string,
+        fileRoute: string,
+        fileType: 'csv' | 'json',
         ignoreTime?: boolean,
     ) {
-        // Validate result in datalake
-        cy.request({
-            method: 'GET',
-            url: `/streampipes-backend/api/v4/datalake/measurements/${dataLakeIndex}/download?format=csv&delimiter=semicolon`,
-            headers: {
-                'content-type': 'application/octet-stream',
-            },
-            auth: {
-                bearer: window.localStorage.getItem('auth-token'),
-            },
-        }).then(response => {
-            const actualResultString = response.body;
-            cy.readFile(fileRoute).then(expectedResultString => {
+        cy.readFile(fileRoute).then(expectedResult => {
+            if (fileType === 'csv') {
                 DataSetUtils.csvEqual(
                     actualResultString,
-                    expectedResultString,
+                    expectedResult,
                     ignoreTime,
                 );
-            });
+            } else if (fileType === 'json') {
+                DataSetUtils.jsonFilesEqual(
+                    actualResultString,
+                    expectedResult,
+                    ignoreTime,
+                );
+            }
         });
     }
 
@@ -425,7 +505,7 @@ export class DataLakeUtils {
     }
 
     public static openTimeSelectorMenu() {
-        cy.dataCy('time-selector-menu').click();
+        cy.dataCy('time-selector-menu', { timeout: 10000 }).click();
     }
 
     public static applyCustomTimeSelection() {

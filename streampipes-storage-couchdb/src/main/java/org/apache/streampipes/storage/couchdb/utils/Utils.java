@@ -55,7 +55,7 @@ public class Utils {
   }
 
   public static CouchDbClient getCouchDbPipelineElementTemplateClient() {
-    return getCouchDbGsonClient("pipelineelementtemplate");
+    return getCouchDbGsonClient("pipelineelementtemplate-v2");
   }
 
   public static CouchDbClient getCouchDbPipelineCanvasMetadataClient() {
@@ -92,10 +92,6 @@ public class Utils {
 
   public static CouchDbClient getCouchDbNotificationClient() {
     return getCouchDbStandardSerializerClient("notification");
-  }
-
-  public static CouchDbClient getCouchDbPipelineCategoriesClient() {
-    return getCouchDbStandardSerializerClient("pipelinecategories");
   }
 
   public static CouchDbClient getCouchDbGsonClient(String dbname) {

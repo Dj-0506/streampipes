@@ -31,6 +31,7 @@ import org.apache.streampipes.model.connect.rules.value.AddTimestampRuleDescript
 import org.apache.streampipes.model.connect.rules.value.AddValueTransformationRuleDescription;
 import org.apache.streampipes.model.connect.rules.value.ChangeDatatypeTransformationRuleDescription;
 import org.apache.streampipes.model.connect.rules.value.CorrectionValueTransformationRuleDescription;
+import org.apache.streampipes.model.connect.rules.value.RegexTransformationRuleDescription;
 import org.apache.streampipes.model.connect.rules.value.TimestampTranfsformationRuleDescription;
 import org.apache.streampipes.model.connect.rules.value.UnitTransformRuleDescription;
 import org.apache.streampipes.model.schema.EventProperty;
@@ -95,6 +96,7 @@ public class ToTransformedSchemaConverter implements ITransformationRuleVisitor,
     property.setRuntimeName(rule.getNewRuntimeKey());
   }
 
+
   @Override
   public void visit(EventRateTransformationRuleDescription rule) {
     // does not affect schema
@@ -120,6 +122,10 @@ public class ToTransformedSchemaConverter implements ITransformationRuleVisitor,
   public void visit(AddValueTransformationRuleDescription rule) {
     var property = new EventPropertyPrimitive();
     property.setElementId(STATIC_VALUE_ID_PREFIX + rule.getStaticValue());
+    var uniqueId = UUIDGenerator.generateUuid().substring(0, 10);
+
+    property.setElementId(STATIC_VALUE_ID_PREFIX + uniqueId + ":" + rule.getStaticValue());
+
     property.setRuntimeName(rule.getRuntimeKey());
     property.setRuntimeType(rule.getDatatype());
     property.setLabel(rule.getLabel());
@@ -127,13 +133,15 @@ public class ToTransformedSchemaConverter implements ITransformationRuleVisitor,
     property.setPropertyScope(rule.getPropertyScope().name());
 
     if (Objects.nonNull(rule.getSemanticType())) {
-      property.setDomainProperties(List.of(URI.create(rule.getSemanticType())));
+      property.setSemanticType(rule.getSemanticType());
     }
     if (Objects.nonNull(rule.getMeasurementUnit())) {
       property.setMeasurementUnit(URI.create(rule.getMeasurementUnit()));
     }
     this.properties.add(property);
   }
+
+
 
   @Override
   public void visit(ChangeDatatypeTransformationRuleDescription rule) {
@@ -150,9 +158,19 @@ public class ToTransformedSchemaConverter implements ITransformationRuleVisitor,
   }
 
   @Override
+  public void visit(RegexTransformationRuleDescription rule) {
+    var property = findPrimitiveProperty(properties, rule.getRuntimeKey());
+    var metadata = property.getAdditionalMetadata();
+
+    metadata.put("regex", rule.getRegex());
+    metadata.put("replaceWith", rule.getReplaceWith());
+    metadata.put("replaceAll", rule.isReplaceAll());
+  }
+
+  @Override
   public void visit(TimestampTranfsformationRuleDescription rule) {
     var property = findPrimitiveProperty(properties, rule.getRuntimeKey());
-    property.setDomainProperties(List.of(URI.create("http://schema.org/DateTime")));
+    property.setSemanticType("http://schema.org/DateTime");
     property.setRuntimeType(Datatypes.Long.toString());
     property.setPropertyScope(PropertyScope.HEADER_PROPERTY.toString());
     var metadata = property.getAdditionalMetadata();

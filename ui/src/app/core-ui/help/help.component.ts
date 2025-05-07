@@ -16,10 +16,11 @@
  *
  */
 
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { SpDataStream } from '@streampipes/platform-services';
 import { DialogRef } from '@streampipes/shared-ui';
 import { PipelineElementUnion } from '../../editor/model/editor.model';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
     selector: 'sp-pipeline-element-help',
@@ -29,17 +30,25 @@ import { PipelineElementUnion } from '../../editor/model/editor.model';
 export class HelpComponent implements OnInit {
     selectedTabIndex = 0;
 
-    availableTabs = ['Values', 'Documentation'];
+    translateService = inject(TranslateService);
+
+    availableTabs = [
+        this.translateService.instant('TOPICS'),
+        this.translateService.instant('CODE'),
+    ];
+
     tabs: string[] = [];
 
     @Input()
     pipelineElement: PipelineElementUnion;
+    isDataStream: boolean;
 
     constructor(private dialogRef: DialogRef<HelpComponent>) {}
 
     ngOnInit() {
         if (this.pipelineElement instanceof SpDataStream) {
             this.tabs = this.availableTabs;
+            this.isDataStream = true;
         } else {
             this.tabs.push(this.availableTabs[1]);
             this.selectedTabIndex = 1;
@@ -51,4 +60,6 @@ export class HelpComponent implements OnInit {
             this.dialogRef.close();
         });
     }
+
+    protected readonly SpDataStream = SpDataStream;
 }

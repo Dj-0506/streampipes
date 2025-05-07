@@ -20,7 +20,7 @@ import { DataLakeUtils } from '../../support/utils/datalake/DataLakeUtils';
 describe('Test Table View in Data Explorer', () => {
     beforeEach('Setup Test', () => {
         cy.initStreamPipesTest();
-        DataLakeUtils.loadDataIntoDataLake('datalake/sample.csv', false);
+        DataLakeUtils.loadDataIntoDataLake('datalake/sample.csv');
     });
 
     it('Perform Test', () => {
@@ -29,6 +29,7 @@ describe('Test Table View in Data Explorer', () => {
          */
         DataLakeUtils.addDataViewAndTableWidget('TestView', 'Persist');
         DataLakeUtils.saveDataViewConfiguration();
+        DataLakeUtils.goToDashboard();
         DataLakeUtils.createAndEditDashboard('TestDashboard');
         DataLakeUtils.addDataViewToDashboard('TestView');
 

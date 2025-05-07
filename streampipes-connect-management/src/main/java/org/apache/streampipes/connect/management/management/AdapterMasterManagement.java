@@ -53,10 +53,11 @@ public class AdapterMasterManagement {
 
   private final DataStreamResourceManager dataStreamResourceManager;
 
-  public AdapterMasterManagement(IAdapterStorage adapterInstanceStorage,
-                                 AdapterResourceManager adapterResourceManager,
-                                 DataStreamResourceManager dataStreamResourceManager,
-                                 AdapterMetrics adapterMetrics
+  public AdapterMasterManagement(
+      IAdapterStorage adapterInstanceStorage,
+      AdapterResourceManager adapterResourceManager,
+      DataStreamResourceManager dataStreamResourceManager,
+      AdapterMetrics adapterMetrics
   ) {
     this.adapterInstanceStorage = adapterInstanceStorage;
     this.adapterMetrics = adapterMetrics;
@@ -64,32 +65,41 @@ public class AdapterMasterManagement {
     this.dataStreamResourceManager = dataStreamResourceManager;
   }
 
-  public String addAdapter(AdapterDescription ad,
-                           String principalSid)
+  public void addAdapter(
+      AdapterDescription adapterDescription,
+      String adapterId,
+      String principalSid
+  )
       throws AdapterException {
 
-    // Create elementId for adapter
+    // Create elementId for datastream
     var dataStreamElementId = ElementIdGenerator.makeElementId(SpDataStream.class);
-    ad.setElementId(ElementIdGenerator.makeElementId(ad));
-    ad.setCreatedAt(System.currentTimeMillis());
-    ad.setCorrespondingDataStreamElementId(dataStreamElementId);
+    adapterDescription.setElementId(adapterId);
+    adapterDescription.setCreatedAt(System.currentTimeMillis());
+    adapterDescription.setCorrespondingDataStreamElementId(dataStreamElementId);
 
     // Add EventGrounding to AdapterDescription
     var eventGrounding = GroundingUtils.createEventGrounding();
-    ad.setEventGrounding(eventGrounding);
+    adapterDescription.setEventGrounding(eventGrounding);
 
-    var elementId = this.adapterResourceManager.encryptAndCreate(ad);
+    this.adapterResourceManager.encryptAndCreate(adapterDescription);
 
-    // Create stream
-    var storedDescription = new SourcesManagement().createAdapterDataStream(ad, dataStreamElementId);
-    storedDescription.setCorrespondingAdapterId(elementId);
-    installDataSource(storedDescription, principalSid, true);
-    LOG.info("Install source (source URL: {} in backend", ad.getElementId());
-
-    return ad.getElementId();
+    // Stream is only created if the adpater is successfully stored
+    createDataStreamForAdapter(adapterDescription, adapterId, dataStreamElementId, principalSid);
   }
 
-
+  private void createDataStreamForAdapter(
+      AdapterDescription adapterDescription,
+      String adapterId,
+      String streamId,
+      String principalSid
+  ) throws AdapterException {
+    var storedDescription = new SourcesManagement()
+        .createAdapterDataStream(adapterDescription, streamId);
+    storedDescription.setCorrespondingAdapterId(adapterId);
+    installDataSource(storedDescription, principalSid);
+    LOG.info("Install source (source URL: {} in backend", adapterDescription.getElementId());
+  }
 
   public AdapterDescription getAdapter(String elementId) throws AdapterException {
     List<AdapterDescription> allAdapters = adapterInstanceStorage.findAll();
@@ -115,7 +125,7 @@ public class AdapterMasterManagement {
 
     // Stop stream adapter
     try {
-      stopStreamAdapter(elementId);
+      stopStreamAdapter(elementId, true);
     } catch (AdapterException e) {
       LOG.info("Could not stop adapter: " + elementId, e);
     }
@@ -131,21 +141,25 @@ public class AdapterMasterManagement {
     LOG.info("Successfully deleted data stream: " + adapter.getCorrespondingDataStreamElementId());
   }
 
-  public List<AdapterDescription> getAllAdapterInstances() throws AdapterException {
-
-    List<AdapterDescription> allAdapters = adapterInstanceStorage.findAll();
-
-    if (allAdapters == null) {
-      throw new AdapterException("Could not get all adapters");
-    }
-
-    return allAdapters;
+  public List<AdapterDescription> getAllAdapterInstances() {
+    return adapterInstanceStorage.findAll();
   }
 
-  public void stopStreamAdapter(String elementId) throws AdapterException {
+  public void stopStreamAdapter(String elementId,
+                                boolean forceStop) throws AdapterException {
     AdapterDescription ad = adapterInstanceStorage.getElementById(elementId);
 
-    WorkerRestClient.stopStreamAdapter(ad.getSelectedEndpointUrl(), ad);
+    try {
+      WorkerRestClient.stopStreamAdapter(ad.getSelectedEndpointUrl(), ad);
+    } catch (AdapterException e) {
+      if (!forceStop) {
+        throw new AdapterException("Could not stop adapter", e);
+      } else {
+        ad.setRunning(false);
+        ad.setSelectedEndpointUrl(null);
+        adapterInstanceStorage.updateElement(ad);
+      }
+    }
     ExtensionsLogProvider.INSTANCE.reset(elementId);
 
     // remove the adapter from the metrics manager so that
@@ -166,7 +180,8 @@ public class AdapterMasterManagement {
       var baseUrl = new ExtensionsServiceEndpointGenerator().getEndpointBaseUrl(
           ad.getAppId(),
           SpServiceUrlProvider.ADAPTER,
-          ad.getDeploymentConfiguration().getDesiredServiceTags()
+          ad.getDeploymentConfiguration()
+            .getDesiredServiceTags()
       );
 
       // Update selected endpoint URL of adapter
@@ -185,11 +200,12 @@ public class AdapterMasterManagement {
     }
   }
 
-  private void installDataSource(SpDataStream stream,
-                                 String principalSid,
-                                 boolean publicElement) throws AdapterException {
+  private void installDataSource(
+      SpDataStream stream,
+      String principalSid
+  ) throws AdapterException {
     try {
-      new DataStreamVerifier(stream).verifyAndAdd(principalSid, publicElement);
+      new DataStreamVerifier(stream).verifyAndAdd(principalSid, false);
     } catch (SepaParseException e) {
       LOG.error("Error while installing data source: {}", stream.getElementId(), e);
       throw new AdapterException();

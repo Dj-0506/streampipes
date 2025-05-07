@@ -18,23 +18,24 @@
 
 import { DataLakeUtils } from '../../support/utils/datalake/DataLakeUtils';
 import { DataLakeBtns } from '../../support/utils/datalake/DataLakeBtns';
+import { DataExplorerWidget } from '../../support/model/DataExplorerWidget';
 
 describe('Test Time Order in Data Explorer', () => {
     beforeEach('Setup Test', () => {
         cy.initStreamPipesTest();
-        DataLakeUtils.loadDataIntoDataLake('datalake/sample.csv', false);
+        DataLakeUtils.loadDataIntoDataLake('datalake/sample.csv');
         DataLakeUtils.goToDatalake();
         DataLakeUtils.createAndEditDataView();
     });
 
     it('Perform Test with ascending and descending order', () => {
-        const startDate = new Date(1653871499055);
-        const endDate = new Date(1653871608093);
+        const startDate = new Date('2022-04-01T00:00:00Z');
+        const endDate = new Date('2022-07-01T23:59:59Z');
 
         DataLakeUtils.clickOrderBy('descending');
 
         DataLakeUtils.openVisualizationConfig();
-        DataLakeUtils.selectVisualizationType('Table');
+        DataLakeUtils.selectVisualizationType(DataExplorerWidget.TABLE);
         DataLakeUtils.selectTimeRange(startDate, endDate);
         cy.wait(1000);
 
@@ -52,10 +53,10 @@ describe('Test Time Order in Data Explorer', () => {
 
         // Save and leave view, edit view again and check ascending order
         DataLakeBtns.saveDataViewButton();
-        DataLakeBtns.editDataViewButton('NewWidget');
+        DataLakeBtns.editDataViewButton('Newchart');
         DataLakeUtils.clickOrderBy('ascending');
         DataLakeUtils.openVisualizationConfig();
-        DataLakeUtils.selectVisualizationType('Table');
+        DataLakeUtils.selectVisualizationType(DataExplorerWidget.TABLE);
         DataLakeUtils.selectTimeRange(startDate, endDate);
         cy.wait(1000);
 
